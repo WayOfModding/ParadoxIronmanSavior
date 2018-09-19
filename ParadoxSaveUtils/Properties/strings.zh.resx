@@ -117,8 +117,31 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="_28px_Ironman_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\28px-Ironman_icon.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="BTN_CLEAN" xml:space="preserve">
+    <value>清理存档</value>
+  </data>
+  <data name="BTN_PEEK" xml:space="preserve">
+    <value>存档窥视</value>
+  </data>
+  <data name="BTN_POP" xml:space="preserve">
+    <value>存档出栈</value>
+  </data>
+  <data name="BTN_PUSH" xml:space="preserve">
+    <value>存档压栈</value>
+  </data>
+  <data name="BTN_REBOOT" xml:space="preserve">
+    <value>重启游戏</value>
+  </data>
+  <data name="SELECT_GAME" xml:space="preserve">
+    <value>选择游戏：</value>
+  </data>
+  <data name="SELECT_SAVE" xml:space="preserve">
+    <value>选择存档：</value>
+  </data>
+  <data name="SELECT_VERSION" xml:space="preserve">
+    <value>选择版本：</value>
+  </data>
+  <data name="WINDOW_TITLE" xml:space="preserve">
+    <value>Paradox 铁人工具</value>
   </data>
 </root>

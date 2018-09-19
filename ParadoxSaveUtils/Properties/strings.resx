@@ -117,8 +117,32 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="_28px_Ironman_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\28px-Ironman_icon.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="BTN_CLEAN" xml:space="preserve">
+    <value>Clean</value>
+  </data>
+  <data name="BTN_PEEK" xml:space="preserve">
+    <value>Peek
+</value>
+  </data>
+  <data name="BTN_POP" xml:space="preserve">
+    <value>Pop</value>
+  </data>
+  <data name="BTN_PUSH" xml:space="preserve">
+    <value>Push</value>
+  </data>
+  <data name="BTN_REBOOT" xml:space="preserve">
+    <value>Restart Game</value>
+  </data>
+  <data name="SELECT_GAME" xml:space="preserve">
+    <value>Select Game:</value>
+  </data>
+  <data name="SELECT_SAVE" xml:space="preserve">
+    <value>Select Save:</value>
+  </data>
+  <data name="SELECT_VERSION" xml:space="preserve">
+    <value>Select Version:</value>
+  </data>
+  <data name="WINDOW_TITLE" xml:space="preserve">
+    <value>Paradox Ironman Savior</value>
   </data>
 </root>
