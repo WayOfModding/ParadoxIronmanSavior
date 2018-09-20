@@ -237,10 +237,10 @@ namespace ParadoxSaveUtils
                     //System.IO.File.Delete(backup);
                     this.recyle(backup);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     this.setStatus(PSUStatus.FAILURE);
-                    throw ex;
+                    throw;
                 }
             }
 
