@@ -1,0 +1,9 @@
+language: csharp
+solution: ParadoxSaveUtils.sln
+mono:
+    - latest
+
+matrix:
+    include:
+        - dotnet: latest
+        - mono: latest
