@@ -499,16 +499,52 @@ namespace ParadoxSaveUtils
             onSelectSave();
         }
 
+        // @see https://stackoverflow.com/questions/5901679/kill-process-tree-programmatically-in-c-sharp
+        private static void KillProcessTree(int pid)
+        {
+            if (pid == 0) return;
+
+            string query = string.Format(
+                    @"Select *
+                    From Win32_Process
+                    Where ParentProcessID={0}",
+                    pid);
+            System.Management.ManagementObjectSearcher searcher = new System.Management.ManagementObjectSearcher(query);
+            System.Management.ManagementObjectCollection moc = searcher.Get();
+            foreach (System.Management.ManagementObject mo in moc)
+            {
+                int pidChild = Convert.ToInt32(mo["ProcessID"]);
+                KillProcessTree(pidChild);
+            }
+            try
+            {
+                System.Diagnostics.Process proc = System.Diagnostics.Process.GetProcessById(pid);
+                proc.Kill();
+            }
+            catch (ArgumentException)
+            {
+                // Process already exited.
+            }
+        }
+
         private void killGame()
         {
             string sGameName = this.getGameName();
             string processName = this.dProcesses[sGameName];
             System.Diagnostics.Process[] processes = System.Diagnostics.Process.GetProcessesByName(processName);
-            System.Diagnostics.Debug.Assert(processes.Count() == 1, "Too many processes!");
-            foreach (System.Diagnostics.Process process in processes)
-            {
-                process.Kill();
-            }
+            int nProcess = processes.Count();
+            if (nProcess == 1)
+                foreach (System.Diagnostics.Process process in processes)
+                {
+                    int pid = process.Id;
+                    System.Diagnostics.Debug.WriteLine(string.Format("Kill Game(pid={0}) ...", pid));
+                    KillProcessTree(pid);
+                    //process.CloseMainWindow();
+                }
+            else if (nProcess == 0)
+                return;
+            else
+                throw new Exception("Too many processes!");
         }
 
         private void bootGame()
