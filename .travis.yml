@@ -1,7 +1,6 @@
 language: csharp
 solution: ParadoxSaveUtils.sln
-mono:
-    - latest
+mono: none
 
 matrix:
     include:
