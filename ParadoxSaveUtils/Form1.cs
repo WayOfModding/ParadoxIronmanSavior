@@ -78,13 +78,11 @@ namespace ParadoxSaveUtils
         private void onChangeDirSave(object source, System.IO.FileSystemEventArgs args)
         {
             System.Diagnostics.Debug.WriteLine("onChangeDirSave(source={0}, args={1});", source, args);
-            this.scanDirSave();
         }
 
         private void onChangeDirBack(object source, System.IO.FileSystemEventArgs args)
         {
             System.Diagnostics.Debug.WriteLine("onChangeDirBack(source={0}, args={1});", source, args);
-            this.scanDirBack();
         }
 
         // Push
