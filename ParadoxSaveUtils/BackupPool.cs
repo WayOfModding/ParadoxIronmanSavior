@@ -12,18 +12,18 @@ using System.Text.RegularExpressions;
 
 namespace ParadoxSaveUtils
 {
-    private class DateTimeComparer : IComparer<DateTime>
-    {
-        int IComparer<DateTime>.Compare(DateTime x, DateTime y)
-        {
-            return y.CompareTo(x);
-        }
-    }
-
-    static IComparer<DateTime> dateTimeComparer = new DateTimeComparer();
-
     public class BackupPool
     {
+        private class DateTimeComparer : IComparer<DateTime>
+        {
+            int IComparer<DateTime>.Compare(DateTime x, DateTime y)
+            {
+                return y.CompareTo(x);
+            }
+        }
+
+        static IComparer<DateTime> dateTimeComparer = new DateTimeComparer();
+
         // list of all backup saves
         private Dictionary<int, SaveFile> dictSaves =
             new Dictionary<int, SaveFile>();
