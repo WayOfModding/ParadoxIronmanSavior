@@ -64,7 +64,7 @@ namespace ParadoxSaveUtils
                 this.sPathSave,
                 "recycle");
 
-            this.selectedFile = null;
+            this.SelectedFile = null;
         }
 
         public string GameName
@@ -109,41 +109,41 @@ namespace ParadoxSaveUtils
 
         public bool addSaveFile(SaveFile saveFile)
         {
-            int iVersion = saveFile.Version;
-            DateTime time = saveFile.LastWriteTimeUtc;
             string sSaveName = saveFile.SaveName;
             BackupPool pool = this.pools[sSaveName];
-            SortedList<DateTime, SaveFile> listSaves = pool.List;
-            Dictionary<int, SaveFile> dictSaves = pool.Dict;
-            if (listSaves.ContainsKey(time))
+            bool result = pool.add(saveFile);
+            if (result)
             {
-                return false;
+                // link
+                saveFile.Last = this.SelectedFile;
+                if (this.SelectedFile != null)
+                    this.SelectedFile.Next = saveFile;
             }
-            dictSaves[iVersion] = saveFile;
-            listSaves[time] = saveFile;
-            return true;
+            return result;
         }
 
         public bool removeSaveFile(SaveFile saveFile)
         {
-            int iVersion = saveFile.Version;
-            DateTime time = saveFile.LastWriteTimeUtc;
             string sSaveName = saveFile.SaveName;
             BackupPool pool = this.pools[sSaveName];
-            SortedList<DateTime, SaveFile> listSaves = pool.List;
-            Dictionary<int, SaveFile> dictSaves = pool.Dict;
-            bool result = dictSaves.Remove(iVersion);
-            result &= listSaves.Remove(time);
+            bool result = pool.del(saveFile);
+            if (result)
+            {
+                // unlink
+                SaveFile lastFile = saveFile.Last;
+                SaveFile nextFile = saveFile.Next;
+                if (lastFile != null)
+                    lastFile.Next = nextFile;
+                if (nextFile != null)
+                    nextFile.Last = lastFile;
+            }
             return result;
         }
 
         public void clearSaveFiles(string sSaveName)
         {
             BackupPool pool = this.pools[sSaveName];
-            SortedList<DateTime, SaveFile> listSaves = pool.List;
-            Dictionary<int, SaveFile> dictSaves = pool.Dict;
-            dictSaves.Clear();
-            listSaves.Clear();
+            pool.clear();
         }
 
         public void pushSaveFile(SaveFile saveFile)
@@ -154,38 +154,25 @@ namespace ParadoxSaveUtils
 
         public void pushSaveFile(string sSaveName)
         {
+            // calculate `iVersion`
             BackupPool pool = this.pools[sSaveName];
-            Dictionary<int, SaveFile> dictSaves = pool.Dict;
-            int iMaxVersion = dictSaves.Keys.Max();
-            int iVersion = iMaxVersion + 1;
+            int iVersion = pool.getMaxVersion();
+            // create object `saveFile`
             SaveFile saveFile = new SaveFile(this, sSaveName, iVersion);
-            if (!this.addSaveFile(saveFile))
-            {
-                return;
-            }
-
-            saveFile.Last = this.selectedFile;
-            this.selectedFile = saveFile;
+            // add `saveFile`
+            if (this.addSaveFile(saveFile))
+                // select `saveFile`
+                this.SelectedFile = saveFile;
         }
 
         public void popSaveFile(string sSaveName)
         {
-            BackupPool pool = this.pools[sSaveName];
-            Dictionary<int, SaveFile> dictSaves = pool.Dict;
-            SortedList<DateTime, SaveFile> listSaves = pool.List;
-#if false
-            KeyValuePair<DateTime, SaveFile> kvpNewest = listSaves.First();
-            KeyValuePair<DateTime, SaveFile> kvpOldest = listSaves.Last();
-#endif
-            SaveFile saveFile = this.selectedFile;
-            SaveFile lastSaveFile = saveFile.Last;
-            System.Diagnostics.Debug.WriteLine(String.Format(@"
-                saveFile={0},
-                lastFile={1}",
-                saveFile,
-                lastSaveFile));
-            this.removeSaveFile(saveFile);
-            this.selectedFile = lastSaveFile;
+            SaveFile saveFile = this.SelectedFile;
+            SaveFile lastFile = saveFile.Last;
+            // remove `saveFile`
+            if (this.removeSaveFile(saveFile))
+                // select `lastSaveFile`
+                this.SelectedFile = lastFile;
         }
 
         public void updateUI_save(ComboBox comboBox)
@@ -204,9 +191,8 @@ namespace ParadoxSaveUtils
         public void updateUI_version(string sSaveName, ComboBox comboBox)
         {
             BackupPool pool = this.pools[sSaveName];
-            SortedList<DateTime, SaveFile> listSaves = pool.List;
-            IList<SaveFile> list = listSaves.Values;
-            int count = listSaves.Count;
+            IList<SaveFile> list = pool.Values;
+            int count = pool.Count;
             if (count > 0)
             {
                 object[] range = new object[count];

@@ -30,7 +30,81 @@ namespace ParadoxSaveUtils
         private SortedList<DateTime, SaveFile> listSaves =
             new SortedList<DateTime, SaveFile>(dateTimeComparer);
 
-        public Dictionary<int, SaveFile> Dict { get { return this.dictSaves; } }
-        public SortedList<DateTime, SaveFile> List { get { return this.listSaves; } }
+        public bool add(SaveFile saveFile)
+        {
+            int iVersion = saveFile.Version;
+            DateTime time = saveFile.LastWriteTimeUtc;
+            // avoid duplicate entries
+            bool result1 = false;
+            bool result2 = false;
+
+            if (!listSaves.ContainsKey(time))
+            {
+                listSaves[time] = saveFile;
+                result1 = true;
+            }
+            if (!dictSaves.ContainsKey(iVersion))
+            {
+                dictSaves[iVersion] = saveFile;
+                result2 = true;
+            }
+            return result1 && result2;
+        }
+
+        public bool del(SaveFile saveFile)
+        {
+            int iVersion = saveFile.Version;
+            DateTime time = saveFile.LastWriteTimeUtc;
+            // remove
+            bool result = dictSaves.Remove(iVersion);
+            result &= listSaves.Remove(time);
+
+            return result;
+        }
+
+        public void clear()
+        {
+            dictSaves.Clear();
+            listSaves.Clear();
+        }
+
+        public int getMaxVersion()
+        {
+            int iMaxVersion = dictSaves.Keys.Max();
+            int iVersion = iMaxVersion + 1;
+            return iVersion;
+        }
+
+        private SaveFile getNewest()
+        {
+            KeyValuePair<DateTime, SaveFile> kvpNewest = listSaves.First();
+            return kvpNewest.Value;
+        }
+
+        private SaveFile getOldest()
+        {
+            KeyValuePair<DateTime, SaveFile> kvpOldest = listSaves.Last();
+            return kvpOldest.Value;
+        }
+
+        public int Count
+        {
+            get
+            {
+                System.Diagnostics.Debug.Assert(dictSaves.Count == listSaves.Count,
+                    String.Format("Assertion failed (dictSaves.Count={0}, listSaves.Count={1})",
+                        dictSaves.Count,
+                        listSaves.Count));
+                return listSaves.Count;
+            }
+        }
+
+        public IList<SaveFile> Values
+        {
+            get
+            {
+                return listSaves.Values;
+            }
+        }
     }
 }
