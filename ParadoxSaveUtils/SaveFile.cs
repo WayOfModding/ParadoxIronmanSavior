@@ -23,6 +23,9 @@ namespace ParadoxSaveUtils
         private SaveFile last;
         private SaveFile next;
 
+        // Split full file name such as "Poland (2).eu4"
+        // into three parts: "Poland", "2" and ".eu4";
+        // then create instance `SaveFile(game, sSaveName="Poland", iVersion=4)`
         public SaveFile(Game game, string sSaveName, int iVersion)
         {
             System.Diagnostics.Debug.Assert(game != null);
@@ -109,5 +112,10 @@ namespace ParadoxSaveUtils
             get { return this.next; }
             set { this.next = value; }
         }
+
+        public override string ToString() => string.Format(@"SaveFile(game='{0}', save='{1}', version={2})",
+                game.GameName,
+                this.sSaveName,
+                this.iVersion);
     }
 }

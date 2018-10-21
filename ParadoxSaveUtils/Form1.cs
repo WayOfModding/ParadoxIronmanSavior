@@ -28,9 +28,6 @@ namespace ParadoxSaveUtils
             SUCCESS
         }
 
-        private Regex rgxSave;
-        private Regex rgxBack;
-
         private PSUStatus status;
 
         private Dictionary<string, Game> games = new Dictionary<string, Game>();
@@ -38,11 +35,6 @@ namespace ParadoxSaveUtils
 
         public Form1()
         {
-            const string patternSave = @"^(?<sname>\w+)\.(?:eu4|ck2|hoi4)$";
-            const string patternBack = @"^(?<fname>(?<sname>\w+) \((?<version>\d+)\))\.(?:eu4|ck2|hoi4)$";
-            this.rgxSave = new Regex(patternSave, RegexOptions.Compiled | RegexOptions.ECMAScript);
-            this.rgxBack = new Regex(patternBack, RegexOptions.Compiled | RegexOptions.ECMAScript);
-
             this.games["Europa Universalis IV"] = new Game(
                 "Europa Universalis IV", ".eu4", "steam://rungameid/236850", "eu4");
             this.games["Crusader Kings II"] = new Game(
@@ -55,34 +47,14 @@ namespace ParadoxSaveUtils
 
             if (this.comboBox1.Items.Count > 0)
                 this.comboBox1.SelectedIndex = 0;
-        }
-
-        private void createFileSystemWatcher(string sPath, string sExtensionName,
-            Action<object, System.IO.FileSystemEventArgs> onChange)
-        {
-            System.IO.FileSystemWatcher watcher = new System.IO.FileSystemWatcher();
-
-            watcher.Path = sPath;
-            watcher.NotifyFilter = System.IO.NotifyFilters.LastAccess
-                | System.IO.NotifyFilters.LastWrite
-                | System.IO.NotifyFilters.FileName
-                | System.IO.NotifyFilters.DirectoryName;
-            watcher.Filter = "*" + sExtensionName;
-            watcher.Changed += new System.IO.FileSystemEventHandler(onChange);
-            watcher.Created += new System.IO.FileSystemEventHandler(onChange);
-            watcher.Deleted += new System.IO.FileSystemEventHandler(onChange);
-
-            watcher.EnableRaisingEvents = true;
-        }
-
-        private void onChangeDirSave(object source, System.IO.FileSystemEventArgs args)
-        {
-            System.Diagnostics.Debug.WriteLine("onChangeDirSave(source={0}, args={1});", source, args);
-        }
-
-        private void onChangeDirBack(object source, System.IO.FileSystemEventArgs args)
-        {
-            System.Diagnostics.Debug.WriteLine("onChangeDirBack(source={0}, args={1});", source, args);
+#if DEBUG
+            Task task = Task.Delay(1000).ContinueWith(t =>
+            {
+                System.Diagnostics.Debug.Assert(this.comboBox1.Items.Count > 0, "Invalid UI initialization: comboBox1");
+                System.Diagnostics.Debug.Assert(this.comboBox2.Items.Count > 0, "Invalid UI initialization: comboBox2");
+                System.Diagnostics.Debug.Assert(this.comboBox3.Items.Count > 0, "Invalid UI initialization: comboBox3");
+            });
+#endif
         }
 
         // Push
@@ -200,6 +172,7 @@ namespace ParadoxSaveUtils
             System.IO.File.Move(path, sNewPath);
         }
 
+        // remove all save files with the same save name
         private void clean()
         {
             this.setStatus(PSUStatus.RUNNING);
@@ -217,33 +190,9 @@ namespace ParadoxSaveUtils
             }
 
             string sPathBack = game.PathBack;
-            string[] backups = System.IO.Directory.GetFiles(sPathBack);
 
-            foreach (string backup in backups)
-            {
-                string fileName = System.IO.Path.GetFileName(backup);
-                Match match = rgxBack.Match(fileName);
-
-                if (!match.Success)
-                    continue;
-                // get save name
-                string sMatchSaveName = match.Groups["sname"].Value;
-                // filter save names
-                if (!sSaveName.Equals(sMatchSaveName))
-                    continue;
-
-                // remove all the matching files
-                try
-                {
-                    //System.IO.File.Delete(backup);
-                    this.recyle(backup);
-                }
-                catch (Exception)
-                {
-                    this.setStatus(PSUStatus.FAILURE);
-                    throw;
-                }
-            }
+            // TODO
+            throw new NotSupportedException("clean");
 
             // clean up field `dSaves`
             game.clearSaveFiles(sSaveName);
@@ -361,103 +310,24 @@ namespace ParadoxSaveUtils
             }
             catch (System.NullReferenceException)
             {
+                System.Diagnostics.Debug.WriteLine(String.Format(
+                    @"Invalid value: (comboBox3.SelectedItem={0}).",
+                    this.comboBox3.SelectedItem));
                 return 1;
-            }
-        }
-
-        private void scanDirSave()
-        {
-            Game game = this.selectedGame;
-            // get extension name of game save file
-            string sGameSaveExtensionName = game.FileExtensionName;
-            string sPathSave = game.PathSave;
-
-            // get the list of all files in `save games/` folder
-            string[] actives = System.IO.Directory.GetFiles(sPathSave);
-            // traverse all files in `save games/` folder
-            foreach (string active in actives)
-            {
-                if (active.Contains("_Backup"))
-                    continue;
-                // get extension name of the file
-                string sExtensionName = System.IO.Path.GetExtension(active);
-                // check if the extension name of this file equals
-                // one that a game save file should have
-                if (!sGameSaveExtensionName.Equals(sExtensionName))
-                {
-                    // skip this file which has invalid extension name
-                    continue;
-                }
-                // get file name of the file
-                string sFullFileName = System.IO.Path.GetFileName(active);
-                Match match = this.rgxSave.Match(sFullFileName);
-                if (!match.Success)
-                    continue;
-                string sSaveName = System.IO.Path.GetFileNameWithoutExtension(active);
-                // create a dictionary of file name mapping to a list of file names
-                if (game.ContainsSave(sSaveName))
-                    continue;
-                game.initBackupPool(sSaveName);
-            }
-        }
-
-        private void scanDirBack()
-        {
-            Game game = this.selectedGame;
-            // get extension name of game save file
-            string sPathBack = game.PathBack;
-
-            // get the list of all files in `save games/` folder
-            string[] backups = System.IO.Directory.GetFiles(sPathBack);
-            // categorize
-            foreach (string backup in backups)
-            {
-                string fileName = System.IO.Path.GetFileName(backup);
-                Match match = rgxBack.Match(fileName);
-
-                if (!match.Success)
-                    continue;
-
-                string sSaveName = match.Groups["sname"].Value;
-                string sFileName = match.Groups["fname"].Value;
-                string sVersion = match.Groups["version"].Value;
-                int iVersion = int.Parse(sVersion);
-
-                // add file name to the list
-                if (!game.ContainsSave(sSaveName))
-                {
-                    game.initBackupPool(sSaveName);
-                }
-                SaveFile saveFile = new SaveFile(game, sSaveName, iVersion);
-                // add file
-                if (game.addSaveFile(saveFile))
-                {
-                    continue;
-                }
-                // delete file
-                System.IO.File.Delete(backup);
             }
         }
 
         private void onSelectGame()
         {
             string sGameName = this.getGameName();
+            System.Diagnostics.Debug.Assert(!string.IsNullOrWhiteSpace(sGameName));
             Game game = games[sGameName];
             this.selectedGame = game;
-            System.Diagnostics.Debug.Assert(!string.IsNullOrWhiteSpace(sGameName));
-            // get extension name of game save file
-            string sGameSaveExtensionName = game.FileExtensionName;
-            System.Diagnostics.Debug.Assert(!string.IsNullOrWhiteSpace(sGameSaveExtensionName));
-            string sPathSave = game.PathSave;
-            string sPathBack = game.PathBack;
-            // watch `save games/` folder for any change
-            this.createFileSystemWatcher(sPathSave, sGameSaveExtensionName, this.onChangeDirSave);
-            // watch `save games/backup/` folder for any change
-            this.createFileSystemWatcher(sPathBack, sGameSaveExtensionName, this.onChangeDirBack);
 
-            this.scanDirSave();            
+            game.activateWatcher();
 
-            this.scanDirBack();
+            game.scanDirSave();
+            game.scanDirBack();
 
             // sort lists
             game.updateUI_save(this.comboBox2);
