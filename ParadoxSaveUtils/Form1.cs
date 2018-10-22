@@ -432,5 +432,17 @@ namespace ParadoxSaveUtils
             }
             return true;
         }
+
+        private void openExplorer()
+        {
+            Game game = this.selectedGame;
+            string path = game.PathSave;
+            System.Diagnostics.Process.Start(path);
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            openExplorer();
+        }
     }
 }

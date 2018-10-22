@@ -42,6 +42,7 @@
             this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
+            this.button6 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // comboBox1
@@ -180,11 +181,22 @@
             this.label6.TabIndex = 13;
             this.label6.Text = "  ";
             // 
+            // button6
+            // 
+            this.button6.Location = new System.Drawing.Point(15, 281);
+            this.button6.Name = "button6";
+            this.button6.Size = new System.Drawing.Size(98, 23);
+            this.button6.TabIndex = 14;
+            this.button6.Text = "Open Folder";
+            this.button6.UseVisualStyleBackColor = true;
+            this.button6.Click += new System.EventHandler(this.button6_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(125, 282);
+            this.Controls.Add(this.button6);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.label4);
@@ -223,6 +235,7 @@
             this.button3.Text = global::ParadoxSaveUtils.Properties.strings.BTN_PEEK;
             this.button4.Text = global::ParadoxSaveUtils.Properties.strings.BTN_REBOOT;
             this.button5.Text = global::ParadoxSaveUtils.Properties.strings.BTN_CLEAN;
+            this.button6.Text = global::ParadoxSaveUtils.Properties.strings.OPEN_FOLDER;
             this.Icon = global::ParadoxSaveUtils.Properties.Resources._28px_Ironman_icon;
         }
 
@@ -240,6 +253,7 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Button button6;
     }
 }
 
