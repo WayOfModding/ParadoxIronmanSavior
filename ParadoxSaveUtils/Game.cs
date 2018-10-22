@@ -207,14 +207,16 @@ namespace ParadoxSaveUtils
             return success;
         }
 
-        public void popSaveFile(string sSaveName)
+        public bool popSaveFile(string sSaveName)
         {
             SaveFile saveFile = this.SelectedFile;
             SaveFile lastFile = saveFile.Last;
             // remove `saveFile`
-            if (this.removeSaveFile(saveFile))
+            bool success = this.removeSaveFile(saveFile);
+            if (success)
                 // select `lastSaveFile`
                 this.SelectedFile = lastFile;
+            return success;
         }
 
         public void updateUI_save(ComboBox comboBox)
