@@ -41,6 +41,11 @@ namespace ParadoxSaveUtils
 
         public bool add(SaveFile saveFile)
         {
+            System.Diagnostics.Debug.WriteLine(
+                String.Format(
+                    @"Function `BackupPool:add(saveFile={0})` invoked ...",
+                    saveFile));
+
             int iVersion = saveFile.Version;
             DateTime time = saveFile.LastWriteTimeUtc;
             // avoid duplicate entries
@@ -76,6 +81,7 @@ namespace ParadoxSaveUtils
         {
             int iVersion = saveFile.Version;
             DateTime time = saveFile.LastWriteTimeUtc;
+            System.Diagnostics.Debug.Assert(time != null);
             // remove
             bool result = dictSaves.Remove(iVersion);
             result &= listSaves.Remove(time);

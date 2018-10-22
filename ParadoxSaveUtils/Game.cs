@@ -141,7 +141,7 @@ namespace ParadoxSaveUtils
 
         public void initBackupPool(string sSaveName)
         {
-            this.pools[sSaveName] = new BackupPool();
+            this.pools[sSaveName] = new BackupPool(this, sSaveName);
         }
 
         public bool addSaveFile(SaveFile saveFile)
@@ -183,12 +183,6 @@ namespace ParadoxSaveUtils
             pool.clear();
         }
 
-        public void pushSaveFile(SaveFile saveFile)
-        {
-            string sSaveName = saveFile.SaveName;
-            this.pushSaveFile(sSaveName);
-        }
-
         public bool pushSaveFile(string sSaveName)
         {
             // calculate `iVersion`
@@ -202,21 +196,66 @@ namespace ParadoxSaveUtils
             // add `saveFile`
             bool success = this.addSaveFile(saveFile);
             if (success)
+            {
                 // select `saveFile`
                 this.SelectedFile = saveFile;
+
+                // handle file system
+
+                // relocate save file
+                string sPathFrom = pool.FileSave;
+                string sPathTo = saveFile.AbsolutePath;
+                System.Diagnostics.Debug.Assert(System.IO.File.Exists(sPathFrom));
+                System.Diagnostics.Debug.WriteLine(
+                    String.Format(
+                        @"Relocate file '{0}' to '{1}' ...",
+                        sPathFrom,
+                        sPathTo));
+                if (System.IO.File.Exists(sPathTo))
+                    System.IO.File.Delete(sPathTo);
+                System.IO.File.Copy(sPathFrom, sPathTo);
+            }
             return success;
         }
 
         public bool popSaveFile(string sSaveName)
         {
+            BackupPool pool = this.pools[sSaveName];
             SaveFile saveFile = this.SelectedFile;
             SaveFile lastFile = saveFile.Last;
             // remove `saveFile`
             bool success = this.removeSaveFile(saveFile);
             if (success)
+            {
                 // select `lastSaveFile`
                 this.SelectedFile = lastFile;
+
+                // handle file system
+
+                // remove default backup file
+                string sPathBack = pool.FileBack;
+                if (System.IO.File.Exists(sPathBack))
+                    System.IO.File.Delete(sPathBack);
+
+                // relocate backup file
+                string sPathTo = pool.FileSave;
+                string sPathFrom = saveFile.AbsolutePath;
+                System.Diagnostics.Debug.Assert(System.IO.File.Exists(sPathFrom));
+                System.Diagnostics.Debug.WriteLine(
+                    String.Format(
+                        @"Relocate file '{0}' to '{1}' ...",
+                        sPathFrom,
+                        sPathTo));
+                if (System.IO.File.Exists(sPathTo))
+                    System.IO.File.Delete(sPathTo);
+                System.IO.File.Copy(sPathFrom, sPathTo);
+            }
             return success;
+        }
+
+        public bool peekSaveFile(string sSaveName)
+        {
+            return popSaveFile(sSaveName) && peekSaveFile(sSaveName);
         }
 
         public void updateUI_save(ComboBox comboBox)
@@ -251,12 +290,21 @@ namespace ParadoxSaveUtils
             BackupPool pool = this.pools[sSaveName];
             IList<SaveFile> list = pool.Values;
             int count = pool.Count;
+            System.Diagnostics.Debug.WriteLine(
+                String.Format(
+                    @"Function `updateUI_version` counted {0} items ...",
+                    count));
             if (count > 0)
             {
                 object[] range = new object[count];
                 for (int i = 0; i < count; i++)
                 {
-                    range[i] = list[i].Version;
+                    int version = list[i].Version;
+                    range[i] = version;
+                    System.Diagnostics.Debug.WriteLine(
+                        String.Format(
+                            @"Function `updateUI_version` added version `{0}` into comboBox ...",
+                            version));
                 }
                 comboBox.Items.AddRange(range);
                 comboBox.SelectedIndex = 0;
