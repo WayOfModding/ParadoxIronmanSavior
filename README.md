@@ -1,4 +1,4 @@
-[![TravisBuildStatus](https://travis-ci.org/WayOfModding/ParadoxIronmanSavior.svg?branch=dev)]
+[![TravisBuildStatus](https://travis-ci.org/WayOfModding/ParadoxIronmanSavior.svg?branch=dev)](https://travis-ci.org/WayOfModding/ParadoxIronmanSavior)
 
 # Paradox Ironman Savior
 

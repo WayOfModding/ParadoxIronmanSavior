@@ -14,6 +14,10 @@ namespace ParadoxSaveUtils
 {
     public class Game
     {
+        private Regex rgxSave;
+        private Regex rgxBack;
+        private Regex rgxCasl;
+
         private string sGameName;
         private string sFileExtensionName;
         private string sURI;
@@ -25,6 +29,8 @@ namespace ParadoxSaveUtils
         private Dictionary<string, BackupPool> pools = new Dictionary<string, BackupPool>();
         //
         private SaveFile selectedFile;
+        //
+        private volatile bool isWatcherActivated;
 
         public Game(string sGameName, string sFileExtensionName, string sURI, string sProcessName)
         {
@@ -32,6 +38,13 @@ namespace ParadoxSaveUtils
             System.Diagnostics.Debug.Assert(!String.IsNullOrWhiteSpace(sFileExtensionName));
             System.Diagnostics.Debug.Assert(!String.IsNullOrWhiteSpace(sURI));
             System.Diagnostics.Debug.Assert(!String.IsNullOrWhiteSpace(sProcessName));
+
+            const string patternSave = @"^(?<sname>\w+)$";
+            const string patternBack = @"^(?<sname>\w+) \((?<version>\d+)\)$";
+            const string patternCasl = @"\d{4}_\d{2}_\d{2}";
+            this.rgxSave = new Regex(patternSave, RegexOptions.Compiled | RegexOptions.ECMAScript);
+            this.rgxBack = new Regex(patternBack, RegexOptions.Compiled | RegexOptions.ECMAScript);
+            this.rgxCasl = new Regex(patternCasl, RegexOptions.Compiled | RegexOptions.ECMAScript);
 
             this.sGameName = sGameName;
             this.sFileExtensionName = sFileExtensionName;
@@ -64,7 +77,31 @@ namespace ParadoxSaveUtils
                 this.sPathSave,
                 "recycle");
 
-            this.selectedFile = null;
+            this.SelectedFile = null;
+            this.isWatcherActivated = false;
+        }
+
+        public bool isIronMode(string path)
+        {
+            string sFileName = System.IO.Path.GetFileNameWithoutExtension(path);
+            string sExtension = System.IO.Path.GetExtension(path);
+            sFileName = sFileName.ToLower();
+            sExtension = sExtension.ToLower();
+
+            System.Diagnostics.Debug.Assert(!String.IsNullOrWhiteSpace(sFileName));
+            System.Diagnostics.Debug.Assert(!String.IsNullOrWhiteSpace(sExtension));
+
+            if (!this.sFileExtensionName.Equals(sExtension))
+                return false;
+            if (sFileName.Contains("autosave"))
+                return false;
+            if (sFileName.Contains("backup"))
+                return false;
+            // rule out files whose names contains date as "YYYY_MM_DD"
+            Match match = rgxCasl.Match(sFileName);
+            if (match.Success)
+                return false;
+            return true;
         }
 
         public string GameName
@@ -109,41 +146,41 @@ namespace ParadoxSaveUtils
 
         public bool addSaveFile(SaveFile saveFile)
         {
-            int iVersion = saveFile.Version;
-            DateTime time = saveFile.LastWriteTimeUtc;
             string sSaveName = saveFile.SaveName;
             BackupPool pool = this.pools[sSaveName];
-            SortedList<DateTime, SaveFile> listSaves = pool.List;
-            Dictionary<int, SaveFile> dictSaves = pool.Dict;
-            if (listSaves.ContainsKey(time))
+            bool result = pool.add(saveFile);
+            if (result)
             {
-                return false;
+                // link
+                saveFile.Last = this.SelectedFile;
+                if (this.SelectedFile != null)
+                    this.SelectedFile.Next = saveFile;
             }
-            dictSaves[iVersion] = saveFile;
-            listSaves[time] = saveFile;
-            return true;
+            return result;
         }
 
         public bool removeSaveFile(SaveFile saveFile)
         {
-            int iVersion = saveFile.Version;
-            DateTime time = saveFile.LastWriteTimeUtc;
             string sSaveName = saveFile.SaveName;
             BackupPool pool = this.pools[sSaveName];
-            SortedList<DateTime, SaveFile> listSaves = pool.List;
-            Dictionary<int, SaveFile> dictSaves = pool.Dict;
-            bool result = dictSaves.Remove(iVersion);
-            result &= listSaves.Remove(time);
+            bool result = pool.del(saveFile);
+            if (result)
+            {
+                // unlink
+                SaveFile lastFile = saveFile.Last;
+                SaveFile nextFile = saveFile.Next;
+                if (lastFile != null)
+                    lastFile.Next = nextFile;
+                if (nextFile != null)
+                    nextFile.Last = lastFile;
+            }
             return result;
         }
 
         public void clearSaveFiles(string sSaveName)
         {
             BackupPool pool = this.pools[sSaveName];
-            SortedList<DateTime, SaveFile> listSaves = pool.List;
-            Dictionary<int, SaveFile> dictSaves = pool.Dict;
-            dictSaves.Clear();
-            listSaves.Clear();
+            pool.clear();
         }
 
         public void pushSaveFile(SaveFile saveFile)
@@ -154,42 +191,34 @@ namespace ParadoxSaveUtils
 
         public void pushSaveFile(string sSaveName)
         {
+            // calculate `iVersion`
             BackupPool pool = this.pools[sSaveName];
-            Dictionary<int, SaveFile> dictSaves = pool.Dict;
-            int iMaxVersion = dictSaves.Keys.Max();
-            int iVersion = iMaxVersion + 1;
+            int iVersion = pool.getMaxVersion();
+            // create object `saveFile`
             SaveFile saveFile = new SaveFile(this, sSaveName, iVersion);
-            if (!this.addSaveFile(saveFile))
-            {
-                return;
-            }
-
-            saveFile.Last = this.selectedFile;
-            this.selectedFile = saveFile;
+            System.Diagnostics.Debug.WriteLine(String.Format(
+                @"Select `pushSaveFile({0})` ...",
+                saveFile));
+            // add `saveFile`
+            if (this.addSaveFile(saveFile))
+                // select `saveFile`
+                this.SelectedFile = saveFile;
         }
 
         public void popSaveFile(string sSaveName)
         {
-            BackupPool pool = this.pools[sSaveName];
-            Dictionary<int, SaveFile> dictSaves = pool.Dict;
-            SortedList<DateTime, SaveFile> listSaves = pool.List;
-#if false
-            KeyValuePair<DateTime, SaveFile> kvpNewest = listSaves.First();
-            KeyValuePair<DateTime, SaveFile> kvpOldest = listSaves.Last();
-#endif
-            SaveFile saveFile = this.selectedFile;
-            SaveFile lastSaveFile = saveFile.Last;
-            System.Diagnostics.Debug.WriteLine(String.Format(@"
-                saveFile={0},
-                lastFile={1}",
-                saveFile,
-                lastSaveFile));
-            this.removeSaveFile(saveFile);
-            this.selectedFile = lastSaveFile;
+            SaveFile saveFile = this.SelectedFile;
+            SaveFile lastFile = saveFile.Last;
+            // remove `saveFile`
+            if (this.removeSaveFile(saveFile))
+                // select `lastSaveFile`
+                this.SelectedFile = lastFile;
         }
 
         public void updateUI_save(ComboBox comboBox)
         {
+            comboBox.Items.Clear();
+
             ICollection<string> keys = this.pools.Keys;
             if (keys.Count > 0)
             {
@@ -213,10 +242,11 @@ namespace ParadoxSaveUtils
 
         public void updateUI_version(string sSaveName, ComboBox comboBox)
         {
+            comboBox.Items.Clear();
+
             BackupPool pool = this.pools[sSaveName];
-            SortedList<DateTime, SaveFile> listSaves = pool.List;
-            IList<SaveFile> list = listSaves.Values;
-            int count = listSaves.Count;
+            IList<SaveFile> list = pool.Values;
+            int count = pool.Count;
             if (count > 0)
             {
                 object[] range = new object[count];
@@ -235,7 +265,13 @@ namespace ParadoxSaveUtils
         public SaveFile SelectedFile
         {
             get { return this.selectedFile; }
-            set { this.selectedFile = value; }
+            set
+            {
+                System.Diagnostics.Debug.WriteLine(String.Format(
+                    @"Update `SelectedFile = {0}`",
+                    value));
+                this.selectedFile = value;
+            }
         }
 
         public bool ContainsSave(string sSaveName)
@@ -243,6 +279,124 @@ namespace ParadoxSaveUtils
             Dictionary<string, BackupPool> pools = this.pools;
             bool result = pools.ContainsKey(sSaveName);
             return result;
+        }
+
+        private bool isBackupFor(string sPath, string sSaveName)
+        {
+            string sFileName = System.IO.Path.GetFileNameWithoutExtension(sPath);
+            Match match = rgxBack.Match(sFileName);
+            return match.Success && sSaveName.Equals(sFileName);
+        }
+
+        public void scanDirSave()
+        {
+            string sPathSave = this.PathSave;
+
+            // get the list of all files in `save games/` folder
+            string[] actives = System.IO.Directory.GetFiles(sPathSave);
+            // traverse all files in `save games/` folder
+            foreach (string active in actives)
+            {
+                System.Diagnostics.Debug.WriteLine(String.Format(
+                    @"Function `scanDirSave` handling file (sPath={0}) ...",
+                    active));
+
+                if (!this.isIronMode(active))
+                    continue;
+                string sFileName = System.IO.Path.GetFileNameWithoutExtension(active);
+                // create a dictionary of file name mapping to a list of file names
+                if (this.ContainsSave(sFileName))
+                    continue;
+                this.initBackupPool(sFileName);
+            }
+        }
+
+        public void scanDirBack()
+        {
+            // get extension name of game save file
+            string sPathBack = this.PathBack;
+
+            // get the list of all files in `save games/` folder
+            string[] backups = System.IO.Directory.GetFiles(sPathBack);
+            // categorize
+            foreach (string backup in backups)
+            {
+                System.Diagnostics.Debug.WriteLine(String.Format(
+                    @"Function `scanDirBack` handling file (sPath={0}) ...",
+                    backup));
+
+                if (!this.isIronMode(backup))
+                    continue;
+                string sFileName = System.IO.Path.GetFileNameWithoutExtension(backup);
+                Match match = rgxBack.Match(sFileName);
+
+                if (!match.Success)
+                    continue;
+
+                string sSaveName = match.Groups["sname"].Value;
+                string sVersion = match.Groups["version"].Value;
+                int iVersion = int.Parse(sVersion);
+
+                // add file name to the list
+                if (!this.ContainsSave(sSaveName))
+                {
+                    this.initBackupPool(sSaveName);
+                }
+                // add file
+                SaveFile saveFile = new SaveFile(this, sSaveName, iVersion);
+                this.addSaveFile(saveFile);
+                // delete file
+                //System.IO.File.Delete(backup);
+            }
+        }
+
+        private void onChangeDirSave(object source, System.IO.FileSystemEventArgs args)
+        {
+            System.Diagnostics.Debug.WriteLine("onChangeDirSave(source={0}, args={1});", source, args);
+        }
+
+        private void onChangeDirBack(object source, System.IO.FileSystemEventArgs args)
+        {
+            System.Diagnostics.Debug.WriteLine("onChangeDirBack(source={0}, args={1});", source, args);
+        }
+
+        private System.IO.FileSystemWatcher createFileSystemWatcher(
+            string sPath, string sExtensionName,
+            Action<object, System.IO.FileSystemEventArgs> onChange)
+        {
+            System.IO.FileSystemWatcher watcher = new System.IO.FileSystemWatcher();
+
+            watcher.Path = sPath;
+            watcher.NotifyFilter = System.IO.NotifyFilters.LastAccess
+                | System.IO.NotifyFilters.LastWrite
+                | System.IO.NotifyFilters.FileName
+                | System.IO.NotifyFilters.DirectoryName;
+            watcher.Filter = "*" + sExtensionName;
+            watcher.Changed += new System.IO.FileSystemEventHandler(onChange);
+            watcher.Created += new System.IO.FileSystemEventHandler(onChange);
+            watcher.Deleted += new System.IO.FileSystemEventHandler(onChange);
+
+            watcher.EnableRaisingEvents = true;
+
+            return watcher;
+        }
+
+        public void activateWatcher()
+        {
+            if (this.isWatcherActivated)
+                return;
+
+            string sPathSave = this.PathSave;
+            string sPathBack = this.PathBack;
+            // get extension name of game save file
+            string sGameSaveExtensionName = this.FileExtensionName;
+
+            // watch `save games/` folder for any change
+            this.createFileSystemWatcher(sPathSave, sGameSaveExtensionName, this.onChangeDirSave);
+            // watch `save games/backup/` folder for any change
+            this.createFileSystemWatcher(sPathBack, sGameSaveExtensionName, this.onChangeDirBack);
+
+            this.isWatcherActivated = true;
         }
     }
 }
