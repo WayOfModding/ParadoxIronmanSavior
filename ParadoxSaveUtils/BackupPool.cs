@@ -20,7 +20,7 @@ namespace ParadoxSaveUtils
         }
     }
 
-    static IComparer<DateTime> dateTimeComparer = new DateTimeComparer();
+    public static IComparer<DateTime> dateTimeComparer = new DateTimeComparer();
 
     public class BackupPool
     {

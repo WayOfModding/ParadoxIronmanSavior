@@ -194,8 +194,18 @@ namespace ParadoxSaveUtils
             if (keys.Count > 0)
             {
                 // TODO sort save files by last modification time
+                SortedList<DateTime, string> sldts = new SortedList<DateTime, string>(BackupPool.dateTimeComparer);
                 string[] range = new string[keys.Count];
-                keys.CopyTo(range, 0);
+                foreach (string sSaveName in keys)
+                {
+                    string path = System.IO.Path.Combine(sPathSave,
+                        String.Format("{0}{1}",
+                            sSaveName, sFileExtensionName));
+                    DateTime dateTime = System.IO.File.GetLastWriteTimeUtc(path);
+                    sldts[dateTime] = sSaveName;
+                }
+                IList<SaveFile> list = sldts.Values;
+                list.CopyTo(range, 0);
                 comboBox.Items.AddRange(range);
                 comboBox.SelectedIndex = 0;
             }
