@@ -22,13 +22,22 @@ namespace ParadoxSaveUtils
             }
         }
 
-    public static IComparer<DateTime> dateTimeComparer = new DateTimeComparer();
+        public static IComparer<DateTime> dateTimeComparer = new DateTimeComparer();
 
         // list of all backup saves
         private Dictionary<int, SaveFile> dictSaves =
             new Dictionary<int, SaveFile>();
         private SortedList<DateTime, SaveFile> listSaves =
             new SortedList<DateTime, SaveFile>(dateTimeComparer);
+
+        private Game game;
+        private string sSaveName;
+
+        public BackupPool(Game game, string sSaveName)
+        {
+            this.game = game;
+            this.sSaveName = sSaveName;
+        }
 
         public bool add(SaveFile saveFile)
         {
@@ -56,7 +65,10 @@ namespace ParadoxSaveUtils
                 if (result2)
                     dictSaves.Remove(iVersion);
             }
-            System.Diagnostics.Debug.Assert(listSaves.Count == dictSaves.Count);
+            System.Diagnostics.Debug.Assert(dictSaves.Count == listSaves.Count,
+                String.Format("Assertion failed (dictSaves.Count={0}, listSaves.Count={1})",
+                    dictSaves.Count,
+                    listSaves.Count));
             return result;
         }
 
@@ -113,6 +125,42 @@ namespace ParadoxSaveUtils
             get
             {
                 return listSaves.Values;
+            }
+        }
+
+        public string FileSave
+        {
+            get
+            {
+                Game game = this.game;
+                string sPathSave = game.PathSave;
+                string sExtensionName = game.FileExtensionName;
+                string sFileName = String.Format(
+                    "{0}{1}",
+                    sSaveName,
+                    sExtensionName);
+                string result = System.IO.Path.Combine(
+                    sPathSave,
+                    sFileName);
+                return result;
+            }
+        }
+
+        public string FileBack
+        {
+            get
+            {
+                Game game = this.game;
+                string sPathSave = game.PathSave;
+                string sExtensionName = game.FileExtensionName;
+                string sFileName = String.Format(
+                    "{0}_Backup{1}",
+                    sSaveName,
+                    sExtensionName);
+                string result = System.IO.Path.Combine(
+                    sPathSave,
+                    sFileName);
+                return result;
             }
         }
     }
