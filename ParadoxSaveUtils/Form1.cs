@@ -78,6 +78,8 @@ namespace ParadoxSaveUtils
                 handleFiles(SaveMode.PUSH);
 
             // adjust UI
+            saveFile = game.SelectedFile;
+            iVersion = saveFile.Version;
             this.comboBox3.Items.Insert(0, iVersion);
             this.comboBox3.SelectedItem = iVersion;
 
@@ -215,7 +217,7 @@ namespace ParadoxSaveUtils
         {
             if (mode == SaveMode.PUSH)
             {
-                Tuple<string, string, string> tuple = this.getFiles(1);
+                Tuple<string, string, string> tuple = this.getFiles();
 
                 string dst = tuple.Item1;
                 string src = tuple.Item2;
@@ -234,7 +236,7 @@ namespace ParadoxSaveUtils
             }
             else
             {
-                Tuple<string, string, string> tuple = getFiles();
+                Tuple<string, string, string> tuple = this.getFiles();
 
                 string src = tuple.Item1;
                 string dst = tuple.Item2;
