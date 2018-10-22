@@ -233,7 +233,7 @@ namespace ParadoxSaveUtils
                     DateTime dateTime = System.IO.File.GetLastWriteTimeUtc(path);
                     sldts[dateTime] = sSaveName;
                 }
-                IList<SaveFile> list = sldts.Values;
+                IList<string> list = sldts.Values;
                 list.CopyTo(range, 0);
                 comboBox.Items.AddRange(range);
                 comboBox.SelectedIndex = 0;
