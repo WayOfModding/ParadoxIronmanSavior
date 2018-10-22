@@ -71,11 +71,11 @@ namespace ParadoxSaveUtils
             // get version number
             int iVersion = saveFile.Version;
 
-            // handle file
-            handleFiles(SaveMode.PUSH);
-
             // add save file into the table
-            game.pushSaveFile(sSaveName);
+            bool success = game.pushSaveFile(sSaveName);
+            if (success)
+                // handle file
+                handleFiles(SaveMode.PUSH);
 
             // adjust UI
             this.comboBox3.Items.Insert(0, iVersion);

@@ -189,7 +189,7 @@ namespace ParadoxSaveUtils
             this.pushSaveFile(sSaveName);
         }
 
-        public void pushSaveFile(string sSaveName)
+        public bool pushSaveFile(string sSaveName)
         {
             // calculate `iVersion`
             BackupPool pool = this.pools[sSaveName];
@@ -200,9 +200,11 @@ namespace ParadoxSaveUtils
                 @"Select `pushSaveFile({0})` ...",
                 saveFile));
             // add `saveFile`
-            if (this.addSaveFile(saveFile))
+            bool success = this.addSaveFile(saveFile);
+            if (success)
                 // select `saveFile`
                 this.SelectedFile = saveFile;
+            return success;
         }
 
         public void popSaveFile(string sSaveName)

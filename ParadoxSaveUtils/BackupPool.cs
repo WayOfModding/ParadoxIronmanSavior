@@ -48,7 +48,16 @@ namespace ParadoxSaveUtils
                 dictSaves[iVersion] = saveFile;
                 result2 = true;
             }
-            return result1 && result2;
+            bool result = result1 && result2;
+            if (!result)
+            {
+                if (result1)
+                    listSaves.Remove(time);
+                if (result2)
+                    dictSaves.Remove(iVersion);
+            }
+            System.Diagnostics.Debug.Assert(listSaves.Count == dictSaves.Count);
+            return result;
         }
 
         public bool del(SaveFile saveFile)
