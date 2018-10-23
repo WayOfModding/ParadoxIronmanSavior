@@ -41,9 +41,9 @@ namespace ParadoxSaveUtils
 
         public bool add(SaveFile saveFile)
         {
-            System.Diagnostics.Debug.WriteLine(
+            System.Diagnostics.Debug.Write(
                 String.Format(
-                    @"Function `BackupPool:add(saveFile={0})` invoked ...",
+                    @"Function `BackupPool:add(saveFile={0})` invoked ... ",
                     saveFile));
 
             int iVersion = saveFile.Version;
@@ -62,6 +62,7 @@ namespace ParadoxSaveUtils
                 dictSaves[iVersion] = saveFile;
                 result2 = true;
             }
+
             bool result = result1 && result2;
             if (!result)
             {
@@ -70,6 +71,15 @@ namespace ParadoxSaveUtils
                 if (result2)
                     dictSaves.Remove(iVersion);
             }
+
+            System.Diagnostics.Debug.WriteLine(
+                String.Format(
+                    @"{0}{1}",
+                    result ? "Success" : "Failure",
+                    result ? "" : String.Format(@"={0}+{1}",
+                        result1,
+                        result2)));
+
             System.Diagnostics.Debug.Assert(dictSaves.Count == listSaves.Count,
                 String.Format("Assertion failed (dictSaves.Count={0}, listSaves.Count={1})",
                     dictSaves.Count,
