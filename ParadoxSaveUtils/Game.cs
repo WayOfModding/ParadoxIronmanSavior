@@ -223,16 +223,15 @@ namespace ParadoxSaveUtils
                     @"Function `Game:popSaveFile(sSaveName={0})` invoked ...",
                     sSaveName));
 
+            BackupPool pool = this.pools[sSaveName];
             SaveFile saveFile = this.SelectedFile;
+            SaveFile lastFile = pool.getSecondNewest();
             // remove `saveFile`
             bool success = keep || this.removeSaveFile(saveFile);
             if (success)
             {
-                BackupPool pool = this.pools[sSaveName];
-
                 if (!keep)
                 {
-                    SaveFile lastFile = pool.getSecondNewest();
                     System.Diagnostics.Debug.Write(
                         String.Format(
                             @"Function `Game:popSaveFile` changed `SelectedFile` to ({0}) ... ",
