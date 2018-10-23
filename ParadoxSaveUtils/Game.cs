@@ -233,6 +233,10 @@ namespace ParadoxSaveUtils
                 if (!keep)
                 {
                     SaveFile lastFile = pool.getSecondNewest();
+                    System.Diagnostics.Debug.Write(
+                        String.Format(
+                            @"Function `Game:popSaveFile` changed `SelectedFile` to ({0}) ... ",
+                            lastFile));
                     // select `lastSaveFile`
                     this.SelectedFile = lastFile;
                 }

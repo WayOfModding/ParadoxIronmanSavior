@@ -285,6 +285,8 @@ namespace ParadoxSaveUtils
 
         public SaveFile getSecondNewest()
         {
+            // FIXME
+            // list[1] yields invalid entry
             if (listSaves.Count > 1)
             {
                 var list = listSaves.Values;
