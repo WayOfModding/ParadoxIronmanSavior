@@ -57,7 +57,9 @@ namespace ParadoxSaveUtils
             DateTime time;
             int iVersion = saveFile.Version;
             bool result = false;
+#if !DEBUG
             SaveFile sfToBeRemoved = null;
+#endif
 
             // Add an existing file into the pool:
             if (System.IO.File.Exists(saveFile.AbsolutePath))
@@ -84,7 +86,8 @@ namespace ParadoxSaveUtils
 
             // Challenge got
             // compare it with the items already in the pool
-            if (challenge != null)
+            if (challenge != null
+                && challenge.LastWriteTimeUtc == time)
             {
                 sPathChallenge = challenge.AbsolutePath;
 
