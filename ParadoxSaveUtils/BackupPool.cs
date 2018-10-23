@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Text.RegularExpressions;
 
+using MD5 = System.Security.Cryptography.MD5;
+
 namespace ParadoxSaveUtils
 {
     public class BackupPool
@@ -51,8 +53,29 @@ namespace ParadoxSaveUtils
             // avoid duplicate entries
             bool result1 = false;
             bool result2 = false;
+            bool result3 = false;
 
-            if (!listSaves.ContainsKey(time))
+            if (listSaves.ContainsKey(time))
+            {
+                SaveFile conflict = listSaves[time];
+                using (var fs1 = System.IO.File.OpenRead(saveFile.AbsolutePath))
+                using (var fs2 = System.IO.File.OpenRead(conflict.AbsolutePath))
+                {
+                    var hash1 = MD5.Create().ComputeHash(fs1);
+                    var hash2 = MD5.Create().ComputeHash(fs2);
+                    result3 = !hash1.SequenceEqual(hash2);
+#if DEBUG
+                    string sHash1 = BitConverter.ToString(hash1).Replace("-", "").ToLowerInvariant();
+                    string sHash2 = BitConverter.ToString(hash2).Replace("-", "").ToLowerInvariant();
+                    System.Diagnostics.Debug.Write(String.Format(
+                        @"Comparing conflict files: file/a({0}) - file/b({1}) ... ",
+                        sHash1.Substring(0, 7),
+                        sHash2.Substring(0, 7)));
+#endif
+                }
+                result1 = false;
+            }
+            else
             {
                 listSaves[time] = saveFile;
                 result1 = true;
@@ -63,13 +86,19 @@ namespace ParadoxSaveUtils
                 result2 = true;
             }
 
-            bool result = result1 && result2;
+            bool result = (result1 || result3) && result2;
             if (!result)
             {
                 if (result1)
                     listSaves.Remove(time);
                 if (result2)
                     dictSaves.Remove(iVersion);
+#if !DEBUG
+                // remove duplicate save file
+                string sFilePath = saveFile.AbsolutePath;
+                if (System.IO.File.Exists(sFilePath))
+                    System.IO.File.Delete(sFilePath);
+#endif
             }
 
             System.Diagnostics.Debug.WriteLine(
