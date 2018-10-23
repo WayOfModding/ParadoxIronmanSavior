@@ -240,15 +240,19 @@ namespace ParadoxSaveUtils
                     @"Function `Game:popSaveFile(sSaveName={0})` invoked ...",
                     sSaveName));
 
-            BackupPool pool = this.pools[sSaveName];
             SaveFile saveFile = this.SelectedFile;
-            SaveFile lastFile = saveFile.Last;
             // remove `saveFile`
             bool success = keep || this.removeSaveFile(saveFile);
             if (success)
             {
-                // select `lastSaveFile`
-                this.SelectedFile = lastFile;
+                BackupPool pool = this.pools[sSaveName];
+
+                if (!keep)
+                {
+                    SaveFile lastFile = saveFile.Last;
+                    // select `lastSaveFile`
+                    this.SelectedFile = lastFile;
+                }
 
                 // handle file system
 
