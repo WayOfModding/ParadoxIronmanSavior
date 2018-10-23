@@ -26,13 +26,13 @@ namespace ParadoxSaveUtils
             int iVersion = saveFile.Version;
 
             // add save file into the table
-            game.pushSaveFile(sSaveName);
-
-            // adjust UI
-            saveFile = game.SelectedFile;
-            ++iVersion;
-            this.comboBox3.Items.Insert(0, iVersion);
-            this.comboBox3.SelectedItem = iVersion;
+            if (game.pushSaveFile(sSaveName))
+            {
+                // adjust UI
+                ++iVersion;
+                this.comboBox3.Items.Insert(0, iVersion);
+                this.comboBox3.SelectedItem = iVersion;
+            }
 
             /////////////////
             this.setStatus(PSUStatus.SUCCESS);
@@ -61,12 +61,13 @@ namespace ParadoxSaveUtils
             int iVersion = saveFile.Version;
 
             // remove save file
-            game.popSaveFile(sSaveName);
-
-            // adjust UI
-            this.comboBox3.Items.Remove(iVersion);
-            --iVersion;
-            this.comboBox3.SelectedItem = iVersion;
+            if (game.popSaveFile(sSaveName))
+            {
+                // adjust UI
+                this.comboBox3.Items.Remove(iVersion);
+                --iVersion;
+                this.comboBox3.SelectedItem = iVersion;
+            }
 
             /////////////////
 
