@@ -19,9 +19,6 @@ namespace ParadoxSaveUtils
         private string sSaveName;
         private int iVersion;
         private string sFileName;
-        // LinkedList
-        private SaveFile last;
-        private SaveFile next;
 
         // Split full file name such as "Poland (2).eu4"
         // into three parts: "Poland", "2" and ".eu4";
@@ -36,8 +33,6 @@ namespace ParadoxSaveUtils
             this.sSaveName = sSaveName;
             this.iVersion = iVersion;
             this.sFileName = recreateFileName();
-            //
-            this.last = this.next = null;
         }
 
         private string recreateFileName()
@@ -99,18 +94,6 @@ namespace ParadoxSaveUtils
         public string FileName
         {
             get { return sFileName; }
-        }
-
-        public SaveFile Last
-        {
-            get { return this.last; }
-            set { this.last = value; }
-        }
-
-        public SaveFile Next
-        {
-            get { return this.next; }
-            set { this.next = value; }
         }
 
         public override string ToString() => string.Format(@"SaveFile(game='{0}', save='{1}', version={2})",

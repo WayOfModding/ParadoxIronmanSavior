@@ -182,6 +182,19 @@ namespace ParadoxSaveUtils
             }
         }
 
+        public SaveFile getSecondNewest()
+        {
+            if (listSaves.Count > 1)
+            {
+                IList<SaveFile> list = listSaves.Values;
+                return list[1];
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         private SaveFile getOldest()
         {
             if (listSaves.Count > 0)

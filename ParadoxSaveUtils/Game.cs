@@ -154,13 +154,6 @@ namespace ParadoxSaveUtils
             string sSaveName = saveFile.SaveName;
             BackupPool pool = this.pools[sSaveName];
             bool result = pool.add(saveFile);
-            if (result)
-            {
-                // link
-                saveFile.Last = this.SelectedFile;
-                if (this.SelectedFile != null)
-                    this.SelectedFile.Next = saveFile;
-            }
             return result;
         }
 
@@ -174,16 +167,6 @@ namespace ParadoxSaveUtils
             string sSaveName = saveFile.SaveName;
             BackupPool pool = this.pools[sSaveName];
             bool result = pool.del(saveFile);
-            if (result)
-            {
-                // unlink
-                SaveFile lastFile = saveFile.Last;
-                SaveFile nextFile = saveFile.Next;
-                if (lastFile != null)
-                    lastFile.Next = nextFile;
-                if (nextFile != null)
-                    nextFile.Last = lastFile;
-            }
             return result;
         }
 
@@ -249,7 +232,7 @@ namespace ParadoxSaveUtils
 
                 if (!keep)
                 {
-                    SaveFile lastFile = saveFile.Last;
+                    SaveFile lastFile = pool.getSecondNewest();
                     // select `lastSaveFile`
                     this.SelectedFile = lastFile;
                 }
