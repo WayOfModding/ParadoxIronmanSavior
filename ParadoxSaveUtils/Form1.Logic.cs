@@ -53,6 +53,8 @@ namespace ParadoxSaveUtils
             if (saveFile == null)
             {
                 // TODO
+                System.Diagnostics.Debug.WriteLine(@"Warning! SelectedFile is null!");
+                this.setStatus(PSUStatus.FAILURE);
                 return;
             }
             // get save name
