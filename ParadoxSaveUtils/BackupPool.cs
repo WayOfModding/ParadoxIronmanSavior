@@ -143,14 +143,28 @@ namespace ParadoxSaveUtils
 
         private SaveFile getNewest()
         {
-            KeyValuePair<DateTime, SaveFile> kvpNewest = listSaves.First();
-            return kvpNewest.Value;
+            if (listSaves.Count > 0)
+            {
+                KeyValuePair<DateTime, SaveFile> kvpNewest = listSaves.First();
+                return kvpNewest.Value;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         private SaveFile getOldest()
         {
-            KeyValuePair<DateTime, SaveFile> kvpOldest = listSaves.Last();
-            return kvpOldest.Value;
+            if (listSaves.Count > 0)
+            {
+                KeyValuePair<DateTime, SaveFile> kvpOldest = listSaves.Last();
+                return kvpOldest.Value;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         public int Count
