@@ -146,6 +146,11 @@ namespace ParadoxSaveUtils
 
         public bool addSaveFile(SaveFile saveFile)
         {
+            System.Diagnostics.Debug.WriteLine(
+                String.Format(
+                    @"Function `Game:addSaveFile(saveFile={0})` invoked ...",
+                    saveFile));
+
             string sSaveName = saveFile.SaveName;
             BackupPool pool = this.pools[sSaveName];
             bool result = pool.add(saveFile);
@@ -161,6 +166,11 @@ namespace ParadoxSaveUtils
 
         public bool removeSaveFile(SaveFile saveFile)
         {
+            System.Diagnostics.Debug.WriteLine(
+                String.Format(
+                    @"Function `Game:removeSaveFile(saveFile={0})` invoked ...",
+                    saveFile));
+
             string sSaveName = saveFile.SaveName;
             BackupPool pool = this.pools[sSaveName];
             bool result = pool.del(saveFile);
@@ -185,6 +195,11 @@ namespace ParadoxSaveUtils
 
         public bool pushSaveFile(string sSaveName)
         {
+            System.Diagnostics.Debug.WriteLine(
+                String.Format(
+                    @"Function `Game:pushSaveFile(sSaveName={0})` invoked ...",
+                    sSaveName));
+
             // calculate `iVersion`
             BackupPool pool = this.pools[sSaveName];
             int iVersion = pool.getMaxVersion();
@@ -218,13 +233,18 @@ namespace ParadoxSaveUtils
             return success;
         }
 
-        public bool popSaveFile(string sSaveName)
+        public bool popSaveFile(string sSaveName, bool keep=false)
         {
+            System.Diagnostics.Debug.WriteLine(
+                String.Format(
+                    @"Function `Game:popSaveFile(sSaveName={0})` invoked ...",
+                    sSaveName));
+
             BackupPool pool = this.pools[sSaveName];
             SaveFile saveFile = this.SelectedFile;
             SaveFile lastFile = saveFile.Last;
             // remove `saveFile`
-            bool success = this.removeSaveFile(saveFile);
+            bool success = keep || this.removeSaveFile(saveFile);
             if (success)
             {
                 // select `lastSaveFile`
@@ -248,14 +268,17 @@ namespace ParadoxSaveUtils
                         sPathTo));
                 if (System.IO.File.Exists(sPathTo))
                     System.IO.File.Delete(sPathTo);
-                System.IO.File.Copy(sPathFrom, sPathTo);
+                if (keep)
+                    System.IO.File.Copy(sPathFrom, sPathTo);
+                else
+                    System.IO.File.Move(sPathFrom, sPathTo);
             }
             return success;
         }
 
         public bool peekSaveFile(string sSaveName)
         {
-            return popSaveFile(sSaveName) && peekSaveFile(sSaveName);
+            return popSaveFile(sSaveName, true);
         }
 
         public void updateUI_save(ComboBox comboBox)
