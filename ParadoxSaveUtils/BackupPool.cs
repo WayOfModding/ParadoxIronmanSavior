@@ -27,18 +27,20 @@ namespace ParadoxSaveUtils
         public static IComparer<DateTime> dateTimeComparer = new DateTimeComparer();
 
         // list of all backup saves
-        private Dictionary<int, SaveFile> dictSaves =
-            new Dictionary<int, SaveFile>();
-        private SortedList<DateTime, SaveFile> listSaves =
-            new SortedList<DateTime, SaveFile>(dateTimeComparer);
+        private SortedList<DateTime, SortedList<int, SaveFile>> listSaves =
+            new SortedList<DateTime, SortedList<int, SaveFile>>(dateTimeComparer);
 
         private Game game;
         private string sSaveName;
+        private volatile bool dirty;
+        private IList<SaveFile> cache;
 
         public BackupPool(Game game, string sSaveName)
         {
             this.game = game;
             this.sSaveName = sSaveName;
+            this.dirty = false;
+            this.cache = null;
         }
 
         public bool add(SaveFile saveFile)
@@ -48,11 +50,14 @@ namespace ParadoxSaveUtils
                     @"Function `BackupPool:add(saveFile={0})` invoked ... ",
                     saveFile));
 
+            this.dirty = true;
+
             SaveFile challenge;
             string sPathSave, sPathChallenge;
             DateTime time;
             int iVersion = saveFile.Version;
             bool result = false;
+            SaveFile sfToBeRemoved = null;
 
             // Add an existing file into the pool:
             if (System.IO.File.Exists(saveFile.AbsolutePath))
@@ -62,7 +67,7 @@ namespace ParadoxSaveUtils
                 challenge = null;
                 if (listSaves.ContainsKey(time))
                 {
-                    challenge = listSaves[time];
+                    challenge = get(time);
                 }
                 else
                 {
@@ -102,15 +107,6 @@ namespace ParadoxSaveUtils
                         sHash2.Substring(0, 7)));
 #endif
                 }
-
-                bool containsVersion = dictSaves.ContainsKey(iVersion);
-                if (containsVersion)
-                {
-                    System.Diagnostics.Debug.Write(String.Format(
-                        @"Dictionary `dictSaves` contains key: (version={0}) ... ",
-                        iVersion));
-                }
-                result &= !containsVersion;
             }
             // No challenge, no comparison, auto-success
             else
@@ -118,17 +114,72 @@ namespace ParadoxSaveUtils
                 result = true;
             }
 
-            if (result)
             {
                 // on success
-                listSaves[time] = saveFile;
-                dictSaves[iVersion] = saveFile;
+                SortedList<int, SaveFile> dict = null;
+                if (!listSaves.TryGetValue(time, out dict))
+                {
+                    dict = new SortedList<int, SaveFile>
+                    {
+                        [iVersion] = saveFile
+                    };
+                    listSaves[time] = dict;
+                }
+                else
+                {
+                    bool containsVersion = dict.ContainsKey(iVersion);
+                    if (containsVersion)
+                    {
+                        System.Diagnostics.Debug.Write(String.Format(
+                            @"Dictionary `dict` contains key: (version={0}) ... ",
+                            iVersion));
+                    }
+                    result &= !containsVersion;
+
+                    if (!containsVersion)
+                    {
+                        dict[iVersion] = saveFile;
+
+                        System.Diagnostics.Debug.Write(String.Format(
+                            @"Dictionary `dict` contains ({0}) pairs; start cleaning ... ",
+                            dict.Count));
+
+                        // clean up mess
+                        // among files with the same `LastWriteTimeUtc`  attribute
+                        // choose the one with the smallest `Version` attribute
+                        while (dict.Count > 1)
+                        {
+                            var kvp = dict.Last();
+                            int ver = kvp.Key;
+                            dict.Remove(ver);
+
+#if !DEBUG
+                            sfToBeRemoved = kvp.Value;
+#endif
+
+                            System.Diagnostics.Debug.Write(String.Format(
+                                @"Entry (saveFile={0}) removed ... ",
+                                kvp.Value));
+
+                            if (ver == iVersion)
+                            {
+                                result = false;
+                            }
+                            else
+                            {
+                                result = true;
+                            }
+                        }
+                    }
+                }
+
+                System.Diagnostics.Debug.Assert(dict.Count == 1,
+                    "Dictionary `dict` should have only one entry!");
             }
-#if ! DEBUG
-            else
-            {
+#if !DEBUG
+            if (sfToBeRemoved != null) {
                 // remove duplicate save file
-                string sFilePath = saveFile.AbsolutePath;
+                string sFilePath = sfToBeRemoved.AbsolutePath;
                 if (System.IO.File.Exists(sFilePath))
                     System.IO.File.Delete(sFilePath);
             }
@@ -136,36 +187,82 @@ namespace ParadoxSaveUtils
 
             System.Diagnostics.Debug.WriteLine(
                 result ? "Success" : "Failure");
-            System.Diagnostics.Debug.Assert(dictSaves.Count == listSaves.Count,
-                String.Format("Assertion failed (dictSaves.Count={0}, listSaves.Count={1})",
-                    dictSaves.Count,
-                    listSaves.Count));
 
             return result;
         }
 
         public bool del(SaveFile saveFile)
         {
+            System.Diagnostics.Debug.Write(
+                String.Format(
+                    @"Function `BackupPool:del(saveFile={0})` invoked ... ",
+                    saveFile));
+
+            this.dirty = true;
+
             int iVersion = saveFile.Version;
             DateTime time = saveFile.LastWriteTimeUtc;
             System.Diagnostics.Debug.Assert(time != null);
             // remove
-            bool result = dictSaves.Remove(iVersion);
-            result &= listSaves.Remove(time);
+            bool result = listSaves.Remove(time);
 
             return result;
         }
 
+        private SaveFile get(DateTime time)
+        {
+            var dict = listSaves[time];
+            return get(dict);
+        }
+
+        private SaveFile get(SortedList<int, SaveFile> dict)
+        {
+            System.Diagnostics.Debug.Assert(dict.Count == 1,
+                "Dictionary `dict` should have only one entry!");
+            KeyValuePair<int, SaveFile> kvp = dict.First();
+            SaveFile result = kvp.Value;
+            return result;
+        }
+
+        private SaveFile get(KeyValuePair<DateTime, SortedList<int, SaveFile>> kvp)
+        {
+            var dict = kvp.Value;
+            return get(dict);
+        }
+
+        private bool containsKey(int iVersion)
+        {
+            foreach (var kvp in this.listSaves)
+            {
+                var val = kvp.Value;
+                if (val.ContainsKey(iVersion))
+                    return true;
+            }
+            return false;
+        }
+
         public void clear()
         {
-            dictSaves.Clear();
+            System.Diagnostics.Debug.Write(
+                @"Function `BackupPool:clear()` invoked ... ");
+
+            this.dirty = true;
+
+            // FIXME
             listSaves.Clear();
         }
 
         public int getMaxVersion()
         {
-            int iMaxVersion = dictSaves.Keys.Max();
-            int iVersion = iMaxVersion + 1;
+            int iMaxVersion = 0;
+            int iVersion = 0;
+            foreach (var kvp in this.listSaves)
+            {
+                var val = kvp.Value;
+                iVersion = val.Keys.Max();
+                iMaxVersion = Math.Max(iMaxVersion, iVersion);
+            }
+            iVersion = iMaxVersion + 1;
             return iVersion;
         }
 
@@ -173,8 +270,9 @@ namespace ParadoxSaveUtils
         {
             if (listSaves.Count > 0)
             {
-                KeyValuePair<DateTime, SaveFile> kvpNewest = listSaves.First();
-                return kvpNewest.Value;
+                var kvpNewest = listSaves.First();
+                SaveFile result = get(kvpNewest);
+                return result;
             }
             else
             {
@@ -186,8 +284,10 @@ namespace ParadoxSaveUtils
         {
             if (listSaves.Count > 1)
             {
-                IList<SaveFile> list = listSaves.Values;
-                return list[1];
+                var list = listSaves.Values;
+                var dict = list[1];
+                SaveFile result = get(dict);
+                return result;
             }
             else
             {
@@ -199,8 +299,9 @@ namespace ParadoxSaveUtils
         {
             if (listSaves.Count > 0)
             {
-                KeyValuePair<DateTime, SaveFile> kvpOldest = listSaves.Last();
-                return kvpOldest.Value;
+                var kvpNewest = listSaves.Last();
+                SaveFile result = get(kvpNewest);
+                return result;
             }
             else
             {
@@ -212,10 +313,6 @@ namespace ParadoxSaveUtils
         {
             get
             {
-                System.Diagnostics.Debug.Assert(dictSaves.Count == listSaves.Count,
-                    String.Format("Assertion failed (dictSaves.Count={0}, listSaves.Count={1})",
-                        dictSaves.Count,
-                        listSaves.Count));
                 return listSaves.Count;
             }
         }
@@ -224,7 +321,16 @@ namespace ParadoxSaveUtils
         {
             get
             {
-                return listSaves.Values;
+                if (dirty)
+                {
+                    this.cache = new List<SaveFile>();
+                    foreach (var kvp in this.listSaves)
+                    {
+                        SaveFile saveFile = get(kvp);
+                        this.cache.Add(saveFile);
+                    }
+                }
+                return this.cache;
             }
         }
 
