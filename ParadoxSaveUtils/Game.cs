@@ -305,7 +305,7 @@ namespace ParadoxSaveUtils
             ICollection<string> keys = this.pools.Keys;
             if (keys.Count > 0)
             {
-                // TODO sort save files by last modification time
+                // sort save files by last modification time
                 SortedList<DateTime, string> sldts = new SortedList<DateTime, string>(BackupPool.dateTimeComparer);
                 string[] range = new string[keys.Count];
                 foreach (string sSaveName in keys)

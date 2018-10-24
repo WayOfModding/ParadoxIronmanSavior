@@ -199,7 +199,7 @@ namespace ParadoxSaveUtils
                     @"Function `Form1:onSelectGame()` invoked ..."));
 
             string sGameName = this.getGameName();
-            System.Diagnostics.Debug.Assert(!string.IsNullOrWhiteSpace(sGameName));
+            System.Diagnostics.Debug.Assert(!String.IsNullOrWhiteSpace(sGameName));
             Game game = games[sGameName];
             this.selectedGame = game;
 
@@ -221,7 +221,7 @@ namespace ParadoxSaveUtils
             // update `comboBox3`(Select Version)
             Game game = this.selectedGame;
             string sSaveName = this.getSaveName();
-            System.Diagnostics.Debug.Assert(!string.IsNullOrWhiteSpace(sSaveName));
+            System.Diagnostics.Debug.Assert(!String.IsNullOrWhiteSpace(sSaveName));
 
             game.updateUI_version(sSaveName, this.comboBox3);
         }
@@ -236,7 +236,7 @@ namespace ParadoxSaveUtils
 
             if (pid == 0) return;
 
-            string query = string.Format(
+            string query = String.Format(
                     @"Select *
                     From Win32_Process
                     Where ParentProcessID={0}",
@@ -274,7 +274,10 @@ namespace ParadoxSaveUtils
                 foreach (System.Diagnostics.Process process in processes)
                 {
                     int pid = process.Id;
-                    System.Diagnostics.Debug.WriteLine(string.Format("Kill Game(pid={0}) ...", pid));
+                    System.Diagnostics.Debug.WriteLine(
+                        String.Format(
+                            "Kill Game(pid={0}) ...",
+                            pid));
                     KillProcessTree(pid);
                     //process.CloseMainWindow();
                 }

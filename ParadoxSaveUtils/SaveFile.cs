@@ -41,12 +41,12 @@ namespace ParadoxSaveUtils
             string sSaveName = this.SaveName;
             int iVersion = this.Version;
 
-            string sFullFileName = string.Format("{0} ({1}){2}",
+            string sFullFileName = String.Format("{0} ({1}){2}",
                 sSaveName,
                 iVersion,
                 sGameSaveExtensionName);
 
-            System.Diagnostics.Trace.Assert(!string.IsNullOrWhiteSpace(sFullFileName),
+            System.Diagnostics.Trace.Assert(!String.IsNullOrWhiteSpace(sFullFileName),
                 String.Format(@"Invalid output from 'SaveFile.FileName'!
                         Input is (sGameSaveExtensionName={0}, sSaveName={1}, iVersion={2}).",
                     sGameSaveExtensionName, sSaveName, iVersion));
@@ -96,7 +96,7 @@ namespace ParadoxSaveUtils
             get { return sFileName; }
         }
 
-        public override string ToString() => string.Format(@"SaveFile(game='{0}', save='{1}', version={2})",
+        public override string ToString() => String.Format(@"SaveFile(game='{0}', save='{1}', version={2})",
                 game.GameName,
                 this.sSaveName,
                 this.iVersion);
