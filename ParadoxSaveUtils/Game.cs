@@ -18,7 +18,23 @@ namespace ParadoxSaveUtils
 
         private static void defineGame(string sGameName, string sFileExtensionName, string sURI, string sProcessName)
         {
+            System.Diagnostics.Debug.Assert(sGameName != null);
+            System.Diagnostics.Debug.Assert(sFileExtensionName != null);
+            System.Diagnostics.Debug.Assert(sURI != null);
+            System.Diagnostics.Debug.Assert(sProcessName != null);
+
             Game game = new Game(sGameName, sFileExtensionName, sURI, sProcessName);
+            string sPathSave = game.PathSave;
+            if (!System.IO.Directory.Exists(sPathSave))
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    String.Format(
+                        @"Fail to locate the path of save files for game '{0}'({1})!",
+                        sGameName,
+                        sPathSave));
+                return;
+            }
+
             games[sGameName] = game;
         }
 
@@ -27,6 +43,12 @@ namespace ParadoxSaveUtils
             defineGame("Europa Universalis IV", ".eu4", "steam://rungameid/236850", "eu4");
             defineGame("Crusader Kings II", ".ck2", "steam://rungameid/203770", "CK2game");
             defineGame("Hearts of Iron IV", ".hoi4", "steam://rungameid/394360", "hoi4");
+
+            // TODO add support for other Paradox games
+            //defineGame("Stellaris", ".stellaris", "steam://rungameid/281990", "stellaris");
+
+            System.Diagnostics.Debug.Assert(games.Keys.Count > 0,
+                @"Fail to detect games! Did you install any Paradox Game?");
         }
 
         public static Dictionary<string, Game> DictGames
@@ -119,6 +141,8 @@ namespace ParadoxSaveUtils
             if (sFileName.Contains("autosave"))
                 return false;
             if (sFileName.Contains("backup"))
+                return false;
+            if (sFileName.Contains("temp"))
                 return false;
             // rule out files whose names contains date as "YYYY_MM_DD"
             Match match = rgxCasl.Match(sFileName);
@@ -326,7 +350,6 @@ namespace ParadoxSaveUtils
             comboBox1.Items.Clear();
 
             ICollection<string> keys = games.Keys;
-            System.Diagnostics.Debug.Assert(keys.Count > 0);
             string[] range = new string[keys.Count];
             keys.CopyTo(range, 0);
             comboBox1.Items.AddRange(range);
