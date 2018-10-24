@@ -30,20 +30,17 @@ namespace ParadoxSaveUtils
 
         private PSUStatus status;
 
-        private Dictionary<string, Game> games = new Dictionary<string, Game>();
         private Game selectedGame;
 
         public Form1()
         {
-            this.games["Europa Universalis IV"] = new Game(
-                "Europa Universalis IV", ".eu4", "steam://rungameid/236850", "eu4");
-            this.games["Crusader Kings II"] = new Game(
-                "Crusader Kings II", ".ck2", "steam://rungameid/203770", "CK2game");
-            this.selectedGame = null;
-
             // UI initialization
             InitializeComponent();
             LoadResources();
+
+            Game.init();
+            Game.updateUI_game(this.comboBox1);
+            this.selectedGame = null;
 
             if (this.comboBox1.Items.Count > 0)
                 this.comboBox1.SelectedIndex = 0;

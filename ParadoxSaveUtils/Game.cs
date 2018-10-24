@@ -14,6 +14,29 @@ namespace ParadoxSaveUtils
 {
     public class Game
     {
+        private static Dictionary<string, Game> games = new Dictionary<string, Game>();
+
+        private static void defineGame(string sGameName, string sFileExtensionName, string sURI, string sProcessName)
+        {
+            Game game = new Game(sGameName, sFileExtensionName, sURI, sProcessName);
+            games[sGameName] = game;
+        }
+
+        public static void init()
+        {
+            defineGame("Europa Universalis IV", ".eu4", "steam://rungameid/236850", "eu4");
+            defineGame("Crusader Kings II", ".ck2", "steam://rungameid/203770", "CK2game");
+            defineGame("Hearts of Iron IV", ".hoi4", "steam://rungameid/394360", "hoi4");
+        }
+
+        public static Dictionary<string, Game> DictGames
+        {
+            get
+            {
+                return games;
+            }
+        }
+
         private Regex rgxSave;
         private Regex rgxBack;
         private Regex rgxCasl;
@@ -298,9 +321,21 @@ namespace ParadoxSaveUtils
             return popSaveFile(sSaveName, true);
         }
 
-        public void updateUI_save(ComboBox comboBox)
+        public static void updateUI_game(ComboBox comboBox1)
         {
-            comboBox.Items.Clear();
+            comboBox1.Items.Clear();
+
+            ICollection<string> keys = games.Keys;
+            System.Diagnostics.Debug.Assert(keys.Count > 0);
+            string[] range = new string[keys.Count];
+            keys.CopyTo(range, 0);
+            comboBox1.Items.AddRange(range);
+            comboBox1.SelectedIndex = 0;
+        }
+
+        public void updateUI_save(ComboBox comboBox2)
+        {
+            comboBox2.Items.Clear();
 
             ICollection<string> keys = this.pools.Keys;
             if (keys.Count > 0)
@@ -318,14 +353,14 @@ namespace ParadoxSaveUtils
                 }
                 IList<string> list = sldts.Values;
                 list.CopyTo(range, 0);
-                comboBox.Items.AddRange(range);
-                comboBox.SelectedIndex = 0;
+                comboBox2.Items.AddRange(range);
+                comboBox2.SelectedIndex = 0;
             }
         }
 
-        public void updateUI_version(string sSaveName, ComboBox comboBox)
+        public void updateUI_version(string sSaveName, ComboBox comboBox3)
         {
-            comboBox.Items.Clear();
+            comboBox3.Items.Clear();
 
             BackupPool pool = this.pools[sSaveName];
             IList<SaveFile> list = pool.Values;
@@ -346,8 +381,8 @@ namespace ParadoxSaveUtils
                             @"Function `updateUI_version` added version `{0}` into comboBox ...",
                             version));
                 }
-                comboBox.Items.AddRange(range);
-                comboBox.SelectedIndex = 0;
+                comboBox3.Items.AddRange(range);
+                comboBox3.SelectedIndex = 0;
                 // select save file
                 SaveFile saveFile = list[0];
                 this.SelectedFile = saveFile;

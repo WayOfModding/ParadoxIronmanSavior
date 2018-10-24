@@ -200,7 +200,7 @@ namespace ParadoxSaveUtils
 
             string sGameName = this.getGameName();
             System.Diagnostics.Debug.Assert(!String.IsNullOrWhiteSpace(sGameName));
-            Game game = games[sGameName];
+            Game game = Game.DictGames[sGameName];
             this.selectedGame = game;
 
             game.activateWatcher();
