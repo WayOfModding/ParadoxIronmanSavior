@@ -20,6 +20,12 @@ namespace ParadoxSaveUtils
 
             Game game = this.selectedGame;
             SaveFile saveFile = game.SelectedFile;
+            if (saveFile == null)
+            {
+                System.Diagnostics.Debug.WriteLine(@"Warning! SelectedFile is null!");
+                this.setStatus(PSUStatus.FAILURE);
+                return;
+            }
             // get save name
             string sSaveName = saveFile.SaveName;
             // get version number
@@ -52,7 +58,6 @@ namespace ParadoxSaveUtils
             SaveFile saveFile = game.SelectedFile;
             if (saveFile == null)
             {
-                // TODO
                 System.Diagnostics.Debug.WriteLine(@"Warning! SelectedFile is null!");
                 this.setStatus(PSUStatus.FAILURE);
                 return;
@@ -88,6 +93,12 @@ namespace ParadoxSaveUtils
 
             Game game = this.selectedGame;
             SaveFile saveFile = game.SelectedFile;
+            if (saveFile == null)
+            {
+                System.Diagnostics.Debug.WriteLine(@"Warning! SelectedFile is null!");
+                this.setStatus(PSUStatus.FAILURE);
+                return;
+            }
             // get save name
             string sSaveName = saveFile.SaveName;
 
@@ -156,6 +167,12 @@ namespace ParadoxSaveUtils
 
             Game game = this.selectedGame;
             SaveFile saveFile = game.SelectedFile;
+            if (saveFile == null)
+            {
+                System.Diagnostics.Debug.WriteLine(@"Warning! SelectedFile is null!");
+                this.setStatus(PSUStatus.FAILURE);
+                return;
+            }
             string sSaveName = saveFile.SaveName;
 
             if (String.IsNullOrWhiteSpace(sSaveName))
