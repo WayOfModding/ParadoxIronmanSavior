@@ -164,11 +164,6 @@ namespace ParadoxSaveUtils
                 return;
             }
 
-            string sPathBack = game.PathBack;
-
-            // TODO
-            throw new NotSupportedException("clean");
-
             // clean up field `dSaves`
             game.clearSaveFiles(sSaveName);
 

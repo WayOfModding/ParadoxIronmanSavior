@@ -174,6 +174,33 @@ namespace ParadoxSaveUtils
         {
             BackupPool pool = this.pools[sSaveName];
             pool.clear();
+
+            // handle file system
+
+            // @see `Game:scanDirBack`
+            // get extension name of game save file
+            string sPathBack = this.PathBack;
+
+            // get the list of all files in `save games/` folder
+            string[] backups = System.IO.Directory.GetFiles(sPathBack);
+            // categorize
+            foreach (string backup in backups)
+            {
+                System.Diagnostics.Debug.WriteLine(String.Format(
+                    @"Function `scanDirBack` handling file (sPath={0}) ...",
+                    backup));
+
+                if (!this.isIronMode(backup))
+                    continue;
+                string sFileName = System.IO.Path.GetFileNameWithoutExtension(backup);
+                Match match = rgxBack.Match(sFileName);
+
+                if (!match.Success)
+                    continue;
+
+                // delete file
+                System.IO.File.Delete(backup);
+            }
         }
 
         public bool pushSaveFile(string sSaveName)

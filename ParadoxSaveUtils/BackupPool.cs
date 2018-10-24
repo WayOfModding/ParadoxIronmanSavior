@@ -251,7 +251,6 @@ namespace ParadoxSaveUtils
 
             this.dirty = true;
 
-            // FIXME
             listSaves.Clear();
         }
 
