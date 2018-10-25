@@ -5,13 +5,13 @@ using System.Runtime.InteropServices;
 // 有关程序集的一般信息由以下
 // 控制。更改这些特性值可修改
 // 与程序集关联的信息。
-[assembly: AssemblyTitle("ParadoxSaveUtils")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("ParadoxIronmanSavior")]
+[assembly: AssemblyDescription("Helps you save & load your game saves effectively and efficiently.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Microsoft")]
-[assembly: AssemblyProduct("ParadoxSaveUtils")]
-[assembly: AssemblyCopyright("Copyright © Microsoft 2018")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCompany("KaiserKatze")]
+[assembly: AssemblyProduct("ParadoxIronmanSavior")]
+[assembly: AssemblyCopyright("Copyright © KaiserKatze 2018")]
+[assembly: AssemblyTrademark("KaiserKatze")]
 [assembly: AssemblyCulture("")]
 
 // 将 ComVisible 设置为 false 会使此程序集中的类型
@@ -33,4 +33,4 @@ using System.Runtime.InteropServices;
 // 方法是按如下所示使用“*”: :
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.1.0")]

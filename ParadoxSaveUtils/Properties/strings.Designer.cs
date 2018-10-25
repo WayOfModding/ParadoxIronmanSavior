@@ -105,6 +105,15 @@ namespace ParadoxSaveUtils.Properties {
                 return ResourceManager.GetString("BTN_REBOOT", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   查找类似 Open Folder 的本地化字符串。
+        /// </summary>
+        internal static string OPEN_FOLDER {
+            get {
+                return ResourceManager.GetString("OPEN_FOLDER", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   查找类似 Select Game: 的本地化字符串。

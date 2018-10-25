@@ -1,9 +1,7 @@
 language: csharp
 solution: ParadoxSaveUtils.sln
-mono:
-    - latest
+install:
+ - travis_retry nuget restore -source "https://www.nuget.org/api/v2" "./ParadoxSaveUtils.sln"
 
-matrix:
-    include:
-        - dotnet: latest
-        - mono: latest
+script:
+ - xbuild "./ParadoxSaveUtils.sln"
