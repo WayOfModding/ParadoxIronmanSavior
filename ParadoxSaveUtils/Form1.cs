@@ -83,27 +83,26 @@ namespace ParadoxSaveUtils
 
         private string getGameName()
         {
-            return this.comboBox1.SelectedItem.ToString();
+            var item = this.comboBox1.SelectedItem;
+            if (item == null)
+                return null;
+            return item.ToString();
         }
 
         private string getSaveName()
         {
-            return this.comboBox2.SelectedItem.ToString();
+            var item = this.comboBox2.SelectedItem;
+            if (item == null)
+                return null;
+            return item.ToString();
         }
 
         private int getVersioni()
         {
-            try
-            {
-                return (int)this.comboBox3.SelectedItem;
-            }
-            catch (System.NullReferenceException)
-            {
-                System.Diagnostics.Debug.WriteLine(String.Format(
-                    @"Invalid value: (comboBox3.SelectedItem={0}).",
-                    this.comboBox3.SelectedItem));
+            var item = this.comboBox3.SelectedItem;
+            if (item == null)
                 return 1;
-            }
+            return (int)item;
         }
     }
 }

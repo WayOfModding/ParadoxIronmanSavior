@@ -361,7 +361,9 @@ namespace ParadoxSaveUtils
             System.Diagnostics.Debug.Assert(comboBox2 != null);
             System.Diagnostics.Debug.Assert(comboBox3 != null);
 
+            comboBox2.SelectedItem = null;
             comboBox2.Items.Clear();
+            comboBox3.SelectedItem = null;
             comboBox3.Items.Clear();
 
             ICollection<string> keys = this.pools.Keys;

@@ -221,9 +221,9 @@ namespace ParadoxSaveUtils
             // update `comboBox3`(Select Version)
             Game game = this.selectedGame;
             string sSaveName = this.getSaveName();
-            System.Diagnostics.Debug.Assert(!String.IsNullOrWhiteSpace(sSaveName));
 
-            game.updateUI_version(sSaveName, this.comboBox3);
+            if (sSaveName != null)
+                game.updateUI_version(sSaveName, this.comboBox3);
         }
 
         // @see https://stackoverflow.com/questions/5901679/kill-process-tree-programmatically-in-c-sharp
