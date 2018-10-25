@@ -356,9 +356,13 @@ namespace ParadoxSaveUtils
             comboBox1.SelectedIndex = 0;
         }
 
-        public void updateUI_save(ComboBox comboBox2)
+        public void updateUI_save(ComboBox comboBox2, ComboBox comboBox3)
         {
+            System.Diagnostics.Debug.Assert(comboBox2 != null);
+            System.Diagnostics.Debug.Assert(comboBox3 != null);
+
             comboBox2.Items.Clear();
+            comboBox3.Items.Clear();
 
             ICollection<string> keys = this.pools.Keys;
             if (keys.Count > 0)

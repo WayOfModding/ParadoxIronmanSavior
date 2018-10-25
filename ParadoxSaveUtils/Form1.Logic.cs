@@ -209,7 +209,7 @@ namespace ParadoxSaveUtils
             game.scanDirBack();
 
             // sort lists
-            game.updateUI_save(this.comboBox2);
+            game.updateUI_save(this.comboBox2, this.comboBox3);
         }
 
         private void onSelectSave()
