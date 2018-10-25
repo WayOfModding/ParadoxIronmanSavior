@@ -14,7 +14,7 @@ namespace ParadoxSaveUtils
 {
     public class Game
     {
-        private static Dictionary<string, Game> games = new Dictionary<string, Game>();
+        private static readonly Dictionary<string, Game> games = new Dictionary<string, Game>();
 
         private static void defineGame(string sGameName, string sFileExtensionName, string sURI, string sProcessName)
         {

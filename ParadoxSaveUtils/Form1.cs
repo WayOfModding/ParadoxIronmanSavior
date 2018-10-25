@@ -32,15 +32,20 @@ namespace ParadoxSaveUtils
 
         private Game selectedGame;
 
+        static Form1()
+        {
+            Game.init();
+        }
+
         public Form1()
         {
+            this.selectedGame = null;
+
             // UI initialization
             InitializeComponent();
             LoadResources();
 
-            Game.init();
             Game.updateUI_game(this.comboBox1);
-            this.selectedGame = null;
 
             if (this.comboBox1.Items.Count > 0)
                 this.comboBox1.SelectedIndex = 0;
