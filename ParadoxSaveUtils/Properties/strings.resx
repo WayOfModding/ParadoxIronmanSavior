@@ -133,6 +133,9 @@
   <data name="BTN_REBOOT" xml:space="preserve">
     <value>Restart Game</value>
   </data>
+  <data name="OPEN_FOLDER" xml:space="preserve">
+    <value>Open Folder</value>
+  </data>
   <data name="SELECT_GAME" xml:space="preserve">
     <value>Select Game:</value>
   </data>

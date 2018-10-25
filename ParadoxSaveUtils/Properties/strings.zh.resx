@@ -121,16 +121,19 @@
     <value>清理存档</value>
   </data>
   <data name="BTN_PEEK" xml:space="preserve">
-    <value>存档窥视</value>
+    <value>读取存档</value>
   </data>
   <data name="BTN_POP" xml:space="preserve">
-    <value>存档出栈</value>
+    <value>弹出存档</value>
   </data>
   <data name="BTN_PUSH" xml:space="preserve">
-    <value>存档压栈</value>
+    <value>备份存档</value>
   </data>
   <data name="BTN_REBOOT" xml:space="preserve">
     <value>重启游戏</value>
+  </data>
+  <data name="OPEN_FOLDER" xml:space="preserve">
+    <value>打开目录</value>
   </data>
   <data name="SELECT_GAME" xml:space="preserve">
     <value>选择游戏：</value>
