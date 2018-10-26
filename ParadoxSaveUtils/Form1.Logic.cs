@@ -19,26 +19,16 @@ namespace ParadoxSaveUtils
             /////////////////
 
             Game game = this.selectedGame;
-            SaveFile saveFile = game.SelectedFile;
-            if (saveFile == null)
+            // get save name
+            string sSaveName = this.getSaveName();
+            if (String.IsNullOrWhiteSpace(sSaveName))
             {
-                System.Diagnostics.Debug.WriteLine(@"Warning! SelectedFile is null!");
                 this.setStatus(PSUStatus.FAILURE);
                 return;
             }
-            // get save name
-            string sSaveName = saveFile.SaveName;
-            // get version number
-            int iVersion = saveFile.Version;
 
             // add save file into the table
-            if (game.pushSaveFile(sSaveName))
-            {
-                // adjust UI
-                ++iVersion;
-                this.comboBox3.Items.Insert(0, iVersion);
-                this.comboBox3.SelectedItem = iVersion;
-            }
+            game.pushSaveFile(sSaveName);
 
             /////////////////
             this.setStatus(PSUStatus.SUCCESS);
@@ -55,26 +45,22 @@ namespace ParadoxSaveUtils
             /////////////////
 
             Game game = this.selectedGame;
-            SaveFile saveFile = game.SelectedFile;
-            if (saveFile == null)
+            // get save name
+            string sSaveName = this.getSaveName();
+            if (String.IsNullOrWhiteSpace(sSaveName))
             {
-                System.Diagnostics.Debug.WriteLine(@"Warning! SelectedFile is null!");
                 this.setStatus(PSUStatus.FAILURE);
                 return;
             }
-            // get save name
-            string sSaveName = saveFile.SaveName;
-            // get version number
-            int iVersion = saveFile.Version;
+            int version = this.getVersioni();
+            if (version < 0)
+            {
+                this.setStatus(PSUStatus.FAILURE);
+                return;
+            }
 
             // remove save file
-            if (game.popSaveFile(sSaveName))
-            {
-                // adjust UI
-                this.comboBox3.Items.Remove(iVersion);
-                --iVersion;
-                this.comboBox3.SelectedItem = iVersion;
-            }
+            game.popSaveFile(sSaveName);
 
             /////////////////
 
@@ -92,15 +78,19 @@ namespace ParadoxSaveUtils
             /////////////////
 
             Game game = this.selectedGame;
-            SaveFile saveFile = game.SelectedFile;
-            if (saveFile == null)
+            // get save name
+            string sSaveName = this.getSaveName();
+            if (String.IsNullOrWhiteSpace(sSaveName))
             {
-                System.Diagnostics.Debug.WriteLine(@"Warning! SelectedFile is null!");
                 this.setStatus(PSUStatus.FAILURE);
                 return;
             }
-            // get save name
-            string sSaveName = saveFile.SaveName;
+            int version = this.getVersioni();
+            if (version < 0)
+            {
+                this.setStatus(PSUStatus.FAILURE);
+                return;
+            }
 
             game.peekSaveFile(sSaveName);
 
@@ -169,7 +159,7 @@ namespace ParadoxSaveUtils
             SaveFile saveFile = game.SelectedFile;
             if (saveFile == null)
             {
-                System.Diagnostics.Debug.WriteLine(@"Warning! SelectedFile is null!");
+                System.Diagnostics.Debug.WriteLine(@"Warning! Action<Clean>. SelectedFile is null!");
                 this.setStatus(PSUStatus.FAILURE);
                 return;
             }
@@ -185,7 +175,7 @@ namespace ParadoxSaveUtils
             game.clearSaveFiles(sSaveName);
 
             // clean up UI
-            this.comboBox3.Items.Clear();
+            this.resetComboBox(this.comboBox3);
 
             /////////////////
 
@@ -203,13 +193,13 @@ namespace ParadoxSaveUtils
             Game game = Game.DictGames[sGameName];
             this.selectedGame = game;
 
-            game.activateWatcher();
+            this.activateWatcher(game);
 
             game.scanDirSave();
             game.scanDirBack();
 
             // sort lists
-            game.updateUI_save(this.comboBox2, this.comboBox3);
+            this.updateUI_save();
         }
 
         private void onSelectSave()
@@ -223,7 +213,7 @@ namespace ParadoxSaveUtils
             string sSaveName = this.getSaveName();
 
             if (sSaveName != null)
-                game.updateUI_version(sSaveName, this.comboBox3);
+                this.updateUI_version(sSaveName);
         }
 
         // @see https://stackoverflow.com/questions/5901679/kill-process-tree-programmatically-in-c-sharp
@@ -333,6 +323,153 @@ namespace ParadoxSaveUtils
             Game game = this.selectedGame;
             string path = game.PathSave;
             System.Diagnostics.Process.Start(path);
+        }
+
+        private void resetComboBox(System.Windows.Forms.ComboBox comboBox)
+        {
+            if (comboBox.InvokeRequired)
+            {
+                comboBox.Invoke(new Action(() =>
+                {
+                    comboBox.SelectedItem = null;
+                    comboBox.Items.Clear();
+                }));
+            }
+            else
+            {
+                comboBox.SelectedItem = null;
+                comboBox.Items.Clear();
+            }
+        }
+
+        private void setComboBoxRange(System.Windows.Forms.ComboBox comboBox, object[] range)
+        {
+            if (comboBox.InvokeRequired)
+            {
+                comboBox.Invoke(new Action(() =>
+                {
+                    comboBox.Items.AddRange(range);
+                    comboBox.SelectedIndex = 0;
+                }));
+            }
+            else
+            {
+                comboBox.Items.AddRange(range);
+                comboBox.SelectedIndex = 0;
+            }
+        }
+
+        private void updateUI_save()
+        {
+            this.resetComboBox(this.comboBox2);
+            this.resetComboBox(this.comboBox3);
+
+            Game game = this.selectedGame;
+            if (game == null)
+                return;
+
+            ICollection<string> keys = game.Saves;
+            string sPathSave = game.PathSave;
+            string sFileExtensionName = game.FileExtensionName;
+            if (keys.Count > 0)
+            {
+                // sort save files by last modification time
+                SortedList<DateTime, string> sldts = new SortedList<DateTime, string>(BackupPool.dateTimeComparer);
+                string[] range = new string[keys.Count];
+                foreach (string sSaveName in keys)
+                {
+                    string path = System.IO.Path.Combine(sPathSave,
+                        String.Format("{0}{1}",
+                            sSaveName, sFileExtensionName));
+                    DateTime dateTime = System.IO.File.GetLastWriteTimeUtc(path);
+                    sldts[dateTime] = sSaveName;
+                }
+                IList<string> list = sldts.Values;
+                list.CopyTo(range, 0);
+                this.setComboBoxRange(this.comboBox2, range);
+            }
+        }
+
+        public void updateUI_version(string sSaveName)
+        {
+            this.resetComboBox(this.comboBox3);
+
+            Game game = this.selectedGame;
+            IList<SaveFile> list = game.getVersionList(sSaveName);
+            int count = list.Count;
+            System.Diagnostics.Debug.WriteLine(
+                String.Format(
+                    @"Function `updateUI_version` counted {0} items ...",
+                    count));
+            if (count > 0)
+            {
+                object[] range = new object[count];
+                for (int i = 0; i < count; i++)
+                {
+                    int version = list[i].Version;
+                    range[i] = version;
+                    System.Diagnostics.Debug.WriteLine(
+                        String.Format(
+                            @"Function `updateUI_version` added version `{0}` into comboBox ...",
+                            version));
+                }
+                this.setComboBoxRange(this.comboBox3, range);
+                // select save file
+                SaveFile saveFile = list[0];
+                game.SelectedFile = saveFile;
+            }
+        }
+
+        private void onChangeDirSave(object source, System.IO.FileSystemEventArgs args)
+        {
+            System.Diagnostics.Debug.WriteLine("onChangeDirSave(source={0}, args={1});", source, args);
+
+            Game game = this.selectedGame;
+            if (game == null)
+                return;
+
+            game.scanDirSave();
+            System.Diagnostics.Debug.WriteLine(
+                String.Format(
+                    @"Save Count: {0}.",
+                    game.Saves.Count));
+            this.updateUI_save();
+        }
+
+        protected void onChangeDirBack(object source, System.IO.FileSystemEventArgs args)
+        {
+            System.Diagnostics.Debug.WriteLine("onChangeDirBack(source={0}, args={1});", source, args);
+
+            Game game = this.selectedGame;
+            if (game == null)
+                return;
+
+            game.scanDirBack();
+
+            SaveFile saveFile = game.SelectedFile;
+            if (saveFile == null)
+                return;
+            string sSaveName = saveFile.SaveName;
+
+            this.updateUI_version(sSaveName);
+        }
+
+        public void activateWatcher(Game game)
+        {
+            if (game.isWatcherActivated)
+                return;
+
+            string sPathSave = game.PathSave;
+            string sPathBack = game.PathBack;
+            // get extension name of game save file
+            string sGameSaveExtensionName = game.FileExtensionName;
+
+            // watch `save games/` folder for any change
+            game.createFileSystemWatcher(sPathSave, sGameSaveExtensionName, this.onChangeDirSave);
+            // watch `save games/backup/` folder for any change
+            game.createFileSystemWatcher(sPathBack, sGameSaveExtensionName, this.onChangeDirBack);
+
+            game.isWatcherActivated = true;
         }
     }
 }

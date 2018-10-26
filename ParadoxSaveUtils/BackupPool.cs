@@ -39,7 +39,7 @@ namespace ParadoxSaveUtils
         {
             this.game = game;
             this.sSaveName = sSaveName;
-            this.dirty = false;
+            this.dirty = true;
             this.cache = null;
         }
 
@@ -246,7 +246,7 @@ namespace ParadoxSaveUtils
 
         public void clear()
         {
-            System.Diagnostics.Debug.Write(
+            System.Diagnostics.Debug.WriteLine(
                 @"Function `BackupPool:clear()` invoked ... ");
 
             this.dirty = true;
@@ -333,6 +333,7 @@ namespace ParadoxSaveUtils
                         SaveFile saveFile = get(kvp);
                         this.cache.Add(saveFile);
                     }
+                    dirty = false;
                 }
                 return this.cache;
             }

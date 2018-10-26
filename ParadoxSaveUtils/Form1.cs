@@ -45,18 +45,20 @@ namespace ParadoxSaveUtils
             InitializeComponent();
             LoadResources();
 
-            Game.updateUI_game(this.comboBox1);
+            this.updateUI_game();
+        }
 
-            if (this.comboBox1.Items.Count > 0)
+        private void updateUI_game()
+        {
+            comboBox1.Items.Clear();
+
+            ICollection<string> games = Game.Games;
+            int count = games.Count;
+            string[] range = new string[count];
+            games.CopyTo(range, 0);
+            comboBox1.Items.AddRange(range);
+            if (count > 0)
                 this.comboBox1.SelectedIndex = 0;
-#if DEBUG
-            Task task = Task.Delay(1000).ContinueWith(t =>
-            {
-                System.Diagnostics.Debug.Assert(this.comboBox1.Items.Count > 0, "Invalid UI initialization: comboBox1");
-                System.Diagnostics.Debug.Assert(this.comboBox2.Items.Count > 0, "Invalid UI initialization: comboBox2");
-                System.Diagnostics.Debug.Assert(this.comboBox3.Items.Count > 0, "Invalid UI initialization: comboBox3");
-            });
-#endif
         }
 
         // Push
@@ -101,7 +103,7 @@ namespace ParadoxSaveUtils
         {
             var item = this.comboBox3.SelectedItem;
             if (item == null)
-                return 1;
+                return -1;
             return (int)item;
         }
     }
