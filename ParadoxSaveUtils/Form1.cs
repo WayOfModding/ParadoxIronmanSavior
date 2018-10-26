@@ -49,14 +49,6 @@ namespace ParadoxSaveUtils
 
             if (this.comboBox1.Items.Count > 0)
                 this.comboBox1.SelectedIndex = 0;
-#if DEBUG
-            Task task = Task.Delay(1000).ContinueWith(t =>
-            {
-                System.Diagnostics.Debug.Assert(this.comboBox1.Items.Count > 0, "Invalid UI initialization: comboBox1");
-                System.Diagnostics.Debug.Assert(this.comboBox2.Items.Count > 0, "Invalid UI initialization: comboBox2");
-                System.Diagnostics.Debug.Assert(this.comboBox3.Items.Count > 0, "Invalid UI initialization: comboBox3");
-            });
-#endif
         }
 
         // Push
