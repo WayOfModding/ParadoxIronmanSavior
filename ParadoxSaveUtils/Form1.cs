@@ -45,9 +45,19 @@ namespace ParadoxSaveUtils
             InitializeComponent();
             LoadResources();
 
-            Game.updateUI_game(this.comboBox1);
+            this.updateUI_game();
+        }
 
-            if (this.comboBox1.Items.Count > 0)
+        private void updateUI_game()
+        {
+            comboBox1.Items.Clear();
+
+            ICollection<string> games = Game.Games;
+            int count = games.Count;
+            string[] range = new string[count];
+            games.CopyTo(range, 0);
+            comboBox1.Items.AddRange(range);
+            if (count > 0)
                 this.comboBox1.SelectedIndex = 0;
         }
 
@@ -93,7 +103,7 @@ namespace ParadoxSaveUtils
         {
             var item = this.comboBox3.SelectedItem;
             if (item == null)
-                return 1;
+                return -1;
             return (int)item;
         }
     }
