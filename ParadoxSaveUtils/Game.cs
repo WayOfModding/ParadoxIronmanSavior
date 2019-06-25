@@ -77,6 +77,8 @@ namespace ParadoxSaveUtils
         //
         public volatile bool isWatcherActivated;
 
+        const string DIRNAME_BACKUP = "psubak";
+
         public Game(string sGameName, string sFileExtensionName, string sURI, string sProcessName)
         {
             System.Diagnostics.Debug.Assert(!String.IsNullOrWhiteSpace(sGameName));
@@ -106,11 +108,11 @@ namespace ParadoxSaveUtils
                 "save games");
             System.Diagnostics.Debug.Assert(System.IO.Directory.Exists(this.sPathSave),
                 String.Format("Directory '{0}' does not exist!", this.sPathSave));
-            // Absolute path of `save games/backup/`
+            // Absolute path of `save games/${DIRNAME_BACKUP}/`
             this.sPathBack = System.IO.Path.Combine(
                 this.sPathSave,
-                "backup");
-            // Create `save games/backup/` folder if it does not exist
+                DIRNAME_BACKUP);
+            // Create `save games/${DIRNAME_BACKUP}/` folder if it does not exist
             if (!System.IO.File.Exists(this.sPathBack))
             {
                 System.IO.Directory.CreateDirectory(this.sPathBack);
