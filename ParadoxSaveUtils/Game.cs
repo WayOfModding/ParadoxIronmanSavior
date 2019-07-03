@@ -421,10 +421,12 @@ namespace ParadoxSaveUtils
                     active));
 
                 if (!this.isIronMode(active))
+                {
+                    System.Diagnostics.Debug.WriteLine(String.Format(
+                        @"File (sPath='{0}') is not ironman save, skip ...",
+                        active));
                     continue;
-                System.Diagnostics.Debug.WriteLine(String.Format(
-                    @"File (sPath='{0}') is not ironman save, skip ...",
-                    active));
+                }
 
                 string sFileName = System.IO.Path.GetFileNameWithoutExtension(active);
                 // create a dictionary of file name mapping to a list of file names
