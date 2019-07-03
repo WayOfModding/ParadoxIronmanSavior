@@ -205,8 +205,13 @@ namespace ParadoxSaveUtils
 
         public BackupPool initBackupPool(string sSaveName)
         {
-            BackupPool result = new BackupPool(this, sSaveName);
-            this.pools[sSaveName] = result;
+            BackupPool result = null;
+            if (!this.pools.TryGetValue(sSaveName, out result))
+            {
+                // key not exists
+                result = new BackupPool(this, sSaveName);
+                this.pools[sSaveName] = result;
+            }
             return result;
         }
 
