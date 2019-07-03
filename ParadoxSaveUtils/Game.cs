@@ -139,17 +139,32 @@ namespace ParadoxSaveUtils
             System.Diagnostics.Debug.Assert(!String.IsNullOrWhiteSpace(sExtension));
 
             if (!this.sFileExtensionName.Equals(sExtension))
+            {
+                System.Diagnostics.Debug.WriteLine("INFO [isIronMode> Extension name not matching!");
                 return false;
+            }
             if (sFileName.Contains("autosave"))
+            {
+                System.Diagnostics.Debug.WriteLine("INFO [isIronMode> Not ironman save [1]!");
                 return false;
+            }
             if (sFileName.Contains("backup"))
+            {
+                System.Diagnostics.Debug.WriteLine("INFO [isIronMode> Not ironman save [2]!");
                 return false;
+            }
             if (sFileName.Contains("temp"))
+            {
+                System.Diagnostics.Debug.WriteLine("INFO [isIronMode> Not ironman save [3]!");
                 return false;
+            }
             // rule out files whose names contains date as "YYYY_MM_DD"
             Match match = rgxCasl.Match(sFileName);
             if (match.Success)
+            {
+                System.Diagnostics.Debug.WriteLine("INFO [isIronMode> Not ironman save [4]!");
                 return false;
+            }
             return true;
         }
 
